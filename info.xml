@@ -4,6 +4,12 @@
   <name>CSV GUI Import to api</name>
   <description>Simply makes gui import available to api</description>
   <license>AGPL</license>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/blob/master/README</url>
+    <url desc="Documentation">https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/blob/master/README</url>
+    <url desc="Support">http://forum.civicrm.org</url>
+    <url desc="Licensing">http://civicrm.org/licensing</url>
+ </urls>
   <maintainer>
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
