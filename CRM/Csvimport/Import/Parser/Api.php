@@ -81,6 +81,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     $this->_params = $this->getActiveFieldParams();
     $this->formatDateParams();
     $this->_params['skipRecentView'] = TRUE;
+    $this->_params['check_permissions'] = TRUE;
 
     try{
       civicrm_api3($this->_entity, 'create', $this->_params);
