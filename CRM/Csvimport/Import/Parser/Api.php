@@ -21,6 +21,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
        $this->_dateFields[] = $field;
      }
    }
+   $this->_fields = array_merge(array('do_not_import' => array('title' => ts('- do not import -'))), $this->_fields);
   }
 
   /**
