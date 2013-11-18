@@ -1,0 +1,6 @@
+This provides a GUI to import to the API
+
+As the Import classes in Core are heavily copied & pasted & it is hard to separate generic code from import specific code this
+extension has 2 classes for each required class
+#1) 'BaseClass' - generally contains code that would be ideally in the import base class in cre
+#2) import specific code

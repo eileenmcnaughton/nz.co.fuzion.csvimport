@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/csvimporter/import</path>
+    <page_callback>CRM_Csvimport_Import_Controller</page_callback>
+    <title>Import_Controller_Api</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>
