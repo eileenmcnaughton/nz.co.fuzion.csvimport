@@ -56,9 +56,29 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
   public function buildQuickForm() {
     //We are gathering this as a text field for now. I tried to put it into the URL but for some reason
     //adding &x=y in the url causes it not to load at all.
-    // I am thinking about a select with a setting to specify which entities are exposed (would create mapping type option values for these)
-    $this->addElement('text', 'entity', ts('Entity To Import'));
+    $allEntities = civicrm_api3('entity', 'get', array());
+    $creatableEntities = array();
+    foreach ($allEntities['values'] as $entity) {
+      $actions = civicrm_api3($entity, 'getactions', array('entity' => $entity));
+      //can add 'submit' later when we can figure out how to specify on submit
+      if(array_intersect(array('create',), $actions['values'])) {
+        $creatableEntities[$entity] = $entity;
+      }
+    }
+    $this->add('select', 'entity', ts('Entity To Import'), array('' => ts('- select -')) + $creatableEntities);
     parent::buildQuickForm();
+  }
+
+  /**
+   * Set defaults for form
+   * @return array
+   */
+  public function setDefaultValues() {
+    $defaults = array();
+    $entity = CRM_Utils_Request::retrieve('entity', 'String', $this, FALSE);
+    //potentially we need to convert entity to full camel
+    $defaults['entity'] = empty($entity) ? '' : ucfirst($entity);
+    return $defaults;
   }
 }
 
