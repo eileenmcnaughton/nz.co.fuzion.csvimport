@@ -37,7 +37,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    *
    * @return boolean      the result of this processing
    * It is called from both the preview & the import actions
-   * (non-PHPdoc)
+   * (non-PHP doc)
    * @see CRM_Csvimport_Import_Parser_BaseClass::summary()
    */
   function summary(&$values) {
@@ -103,7 +103,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    *
    * Although the api will accept any strtotime valid string CiviCRM accepts at least one date format
    * not supported by strtotime so we should run this through a conversion
-   * @param unknown $params
+   * @internal param \unknown $params
    */
   function formatDateParams() {
     $session = CRM_Core_Session::singleton();

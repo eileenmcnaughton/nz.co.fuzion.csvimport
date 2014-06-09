@@ -72,7 +72,7 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
   }
 
   /**
-   * Function to actually build the form - this appears to be entirely code that should be in a shared baseclass in core
+   * Function to actually build the form - this appears to be entirely code that should be in a shared base class in core
    *
    * @return None
    * @access public
@@ -122,9 +122,9 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $this->assign('savedMapping', $mappingArray);
     $this->add('select', 'savedMapping', ts('Mapping Option'), array('' => ts('- select -')) + $mappingArray);
 
-    if ($loadeMapping = $this->get('loadedMapping')) {
-      $this->assign('loadedMapping', $loadeMapping);
-      $this->setDefaults(array('savedMapping' => $loadeMapping));
+    if ($loadedMapping = $this->get('loadedMapping')) {
+      $this->assign('loadedMapping', $loadedMapping);
+      $this->setDefaults(array('savedMapping' => $loadedMapping));
     }
 
     $this->setDefaults(array(
@@ -187,14 +187,14 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $session->set("dateTypes", $dateFormats);
 
     $config = CRM_Core_Config::singleton();
-    $seperator = $config->fieldSeparator;
+    $separator = $config->fieldSeparator;
 
     $mapper = array();
     $mapper = array();
     $parser = new $this->_parser($mapper);
     $parser->setMaxLinesToProcess(100);
     $parser->setEntity($entity);
-    $parser->run($fileName, $seperator,
+    $parser->run($fileName, $separator,
       $mapper,
       $skipColumnHeader,
       CRM_Import_Parser::MODE_MAPFIELD, $contactType

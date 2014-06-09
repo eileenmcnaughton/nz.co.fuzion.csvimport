@@ -304,6 +304,9 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
    *
    * @param array $fields posted values of the form
    *
+   * @param $files
+   * @param $self
+   *
    * @return array list of errors to be posted back to the form
    * @static
    * @access public

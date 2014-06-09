@@ -41,7 +41,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
   /**
    * This is used in error urls
    * although this code specifies the Event import parser it is a completely generic function that could live anywhere (& probably does in C&P
-   * manefestations
+   * manifestations
    * @var unknown
    */
   protected $_importParserUrl = '&parser=CRM_Event_Import_Parser';
@@ -158,7 +158,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     // add all the necessary variables to the form
     $parser->set($this, CRM_Import_Parser::MODE_IMPORT);
 
-    // check if there is any error occured
+    // check if there is any error occurred
 
     $errorStack = CRM_Core_Error::singleton();
     $errors = $errorStack->getErrors();

@@ -48,7 +48,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
   protected $isDuplicateOptions = FALSE;
 
     /**
-   * Function to actually build the form - this appears to be entirely code that should be in a shared baseclass in core
+   * Function to actually build the form - this appears to be entirely code that should be in a shared base class in core
    *
    * @return None
    * @access public

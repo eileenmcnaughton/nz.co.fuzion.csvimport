@@ -115,7 +115,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
 
       self::encloseScrub($values);
 
-      // skip column header if we're not in mapfield mode
+      // skip column header if we're not in mapField mode
       if ($mode != self::MODE_MAPFIELD && $skipColumnHeader) {
         $skipColumnHeader = FALSE;
         continue;
@@ -206,7 +206,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       }
 
       // we give the derived class a way of aborting the process
-      // note that the return code could be multiple code or'ed together
+      // note that the return code could be multiple codes combined with an OR operator
       if ($returnCode & self::STOP) {
         break;
       }
@@ -223,14 +223,14 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
     if ($mode == self::MODE_PREVIEW || $mode == self::MODE_IMPORT) {
       $customHeaders = $mapper;
 
-      $customfields = CRM_Core_BAO_CustomField::getFields('Activity');
+      $customFields = CRM_Core_BAO_CustomField::getFields('Activity');
       foreach ($customHeaders as $key => $value) {
         if ($id = CRM_Core_BAO_CustomField::getKeyID($value)) {
-          $customHeaders[$key] = $customfields[$id][0];
+          $customHeaders[$key] = $customFields[$id][0];
         }
       }
       if ($this->_invalidRowCount) {
-        // removed view url for invlaid contacts
+        // removed view url for invalid contacts
         $headers = array_merge(array(ts('Line Number'),
             ts('Reason'),
           ),
@@ -327,6 +327,8 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    *
    * @param CRM_Core_Session $store
    *
+   * @param int $mode
+   *
    * @return void
    * @access public
    */
@@ -380,10 +382,11 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
   /**
    * Export data to a CSV file
    *
-   * @param string $filename
+   * @param $fileName
    * @param array $header
    * @param data $data
    *
+   * @internal param string $filename
    * @return void
    * @access public
    */

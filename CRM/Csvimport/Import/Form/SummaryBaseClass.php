@@ -40,7 +40,7 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
   /**
    * This is used in error urls
    * although this code specifies the Event import parser it is a completely generic function that could live anywhere (& probably does in C&P
-   * manefestations
+   * manifestations
    * @var unknown
    */
   protected $_importParserUrl = '&parser=CRM_Event_Import_Parser';
@@ -52,7 +52,7 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
    */
   public function preProcess() {
     // set the error message path to display
-    $errorFile = $this->assign('errorFile', $this->get('errorFile'));
+    $this->assign('errorFile', $this->get('errorFile'));
 
     $totalRowCount = $this->get('totalRowCount');
     $relatedCount = $this->get('relatedCount');

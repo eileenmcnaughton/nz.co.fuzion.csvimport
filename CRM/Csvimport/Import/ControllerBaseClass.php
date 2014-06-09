@@ -35,7 +35,7 @@
 // all the stuff in this folder is just a copy of the event version because the functionality that
 // should be in the base class seems to be copied & pasted into the event class.
 
-// so I have copied & pasted to this 'base' form & will put the non-generic parts inthe
+// so I have copied & pasted to this 'base' form & will put the non-generic parts in the
 // non - b form ie. this is working as the base import class that doesn't seem to exist
 class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 

@@ -41,7 +41,7 @@
         {ts count=$unMatchCount plural='CiviCRM has detected mismatched participant IDs. These records have not been Updated.'}CiviCRM has detected mismatched participant ID. This record have not been updated.{/ts}
         </p>
         <p class="error">
-        {ts 1=$downloadMismatchRecordsUrl}You can <a href="%1">Download Mismatched Participantss</a>. You may then correct them, and import the new file with the corrected data.{/ts}
+        {ts 1=$downloadMismatchRecordsUrl}You can <a href="%1">Download Mismatched Participants</a>. You may then correct them, and import the new file with the corrected data.{/ts}
         </p>
     {/if}
 
@@ -56,7 +56,7 @@
 
     {if $conflictRowCount}
         <p class="error">
-        {ts count=$conflictRowCount plural='CiviCRM has detected %count records with conflicting transaction IDs within this data file or relative to existing participant records. These records have not been imported.'}CiviCRM has detected one record with conflicting transaction ID within this data file or relative to existing particpant records. This record have not been imported.{/ts}
+        {ts count=$conflictRowCount plural='CiviCRM has detected %count records with conflicting transaction IDs within this data file or relative to existing participant records. These records have not been imported.'}CiviCRM has detected one record with conflicting transaction ID within this data file or relative to existing participant records. This record have not been imported.{/ts}
         </p>
         <p class="error">
         {ts 1=$downloadConflictRecordsUrl}You can <a href="%1">Download Conflicts</a>. You may then review these records to determine if they are actually conflicts, and correct the transaction IDs for those that are not.{/ts}

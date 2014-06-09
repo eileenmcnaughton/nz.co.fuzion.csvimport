@@ -86,6 +86,9 @@ class CRM_Csvimport_Import_Field {
     $this->_value = $value;
   }
 
+  /**
+   * @return bool
+   */
   function validate() {
     if (CRM_Utils_System::isNull($this->_value)) {
       return TRUE;
@@ -93,12 +96,13 @@ class CRM_Csvimport_Import_Field {
 
     switch ($this->_name) {
       case 'contact_id':
-        // note: we validate extistence of the contact in API, upon
-        // insert (it would be too costlty to do a db call here)
+        // note: we validate existence of the contact in API, upon
+        // insert (it would be too costly to do a db call here)
         return CRM_Utils_Rule::integer($this->_value);
       default:
         break;
     }
+    return FALSE;
   }
 }
 
