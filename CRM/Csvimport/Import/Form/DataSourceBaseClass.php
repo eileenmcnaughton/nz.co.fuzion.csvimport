@@ -141,7 +141,7 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
         CRM_Import_Parser::CONTACT_INDIVIDUAL,
       )
     );
-
+    $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), array('size' => 2));
     //build date formats
     CRM_Core_Form_Date::buildAllowedDateFormats($this);
 
@@ -190,7 +190,6 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $separator = $config->fieldSeparator;
 
     $mapper = array();
-    $mapper = array();
     $parser = new $this->_parser($mapper);
     $parser->setMaxLinesToProcess(100);
     $parser->setEntity($entity);
@@ -231,6 +230,17 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
    */
   public function getTitle() {
     return ts('Upload Data');
+  }
+
+  /**
+   * Set Default Values
+   * @return array
+   */
+  function setDefaultValues() {
+    $defaults = array(
+      'fieldSeparator' => CRM_Core_Config::singleton()->fieldSeparator,
+    );
+    return $defaults;
   }
 }
 

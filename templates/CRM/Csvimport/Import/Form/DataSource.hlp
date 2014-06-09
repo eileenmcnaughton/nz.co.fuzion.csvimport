@@ -31,3 +31,11 @@
   {ts}Duplicate Matching{/ts}
 {/htxt}
 
+{htxt id='id-fieldSeparator-title'}
+  {ts}Field Separator{/ts}
+{/htxt}
+{htxt id='id-fieldSeparator'}
+  {ts}Enter the character used to separate data columns in your import file. By default, the field
+  will populate with the separator defined in your global settings. Common values include a comma, semicolon,
+  or pipe character. To import a tab separated file, enter "tab" (without quotes) in the field.{/ts}
+{/htxt}

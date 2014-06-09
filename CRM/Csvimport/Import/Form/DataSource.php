@@ -74,11 +74,12 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
    * @return array
    */
   public function setDefaultValues() {
-    $defaults = array();
+    $defaults = parent::setDefaultValues();
     $entity = CRM_Utils_Request::retrieve('entity', 'String', $this, FALSE);
     //potentially we need to convert entity to full camel
     $defaults['entity'] = empty($entity) ? '' : ucfirst($entity);
     return $defaults;
+
   }
 }
 

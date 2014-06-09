@@ -65,6 +65,10 @@
             <td class="label">{$form.onDuplicate.label}</td>
       <td>{$form.onDuplicate.html}</td>
         </tr>
+ <tr class="crm-import-datasource-form-block-fieldSeparator">
+   <td class="label">{$form.fieldSeparator.label}</td>
+   <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
+ </tr>
   <tr class="crm-api-import-uploadfile-form-block-date_format">
             {include file="CRM/Core/Date.tpl"}
   </tr>
