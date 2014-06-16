@@ -91,7 +91,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     try{
       civicrm_api3($this->_entity, 'create', $this->_params);
     }
-    catch(CiviCRM_API3_Exception $e) {
+    catch (CiviCRM_API3_Exception $e) {
       $error = $e->getMessage();
       array_unshift($values, $error);
       return CRM_Import_Parser::ERROR;

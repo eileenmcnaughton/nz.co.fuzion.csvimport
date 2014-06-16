@@ -68,3 +68,31 @@ function csvimport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 function csvimport_civicrm_managed(&$entities) {
   return _csvimport_civix_civicrm_managed($entities);
 }
+
+/**
+ * Implementation of hook_civicrm_navigationMenu
+ *
+ * Adds entries to the navigation menu
+ * @param unknown $menu
+ */
+function csvimport_civicrm_navigationMenu(&$menu) {
+  $maxID = CRM_Core_DAO::singleValueQuery("SELECT max(id) FROM civicrm_navigation");
+  $administerMenuId = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_Navigation', 'Administer', 'id', 'name');
+  if (!$administerMenuId) {
+    return;
+  }
+  $navId = $maxID + 1;
+  $menu[$navId] = array (
+    'attributes' => array (
+      'label' => 'API csv Import',
+      'name' => 'CSV to api bridge',
+      'url' => 'csvimporter/import',
+      'permission' => 'administer CiviCRM',
+      'operator' => null,
+      'separator' => null,
+      'parentID' => $administerMenuId,
+      'active' => 1,
+      'navID' => $navId,
+    )
+  );
+}
