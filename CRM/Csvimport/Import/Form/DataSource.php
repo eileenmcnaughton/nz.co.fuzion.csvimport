@@ -39,7 +39,7 @@
 class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_DataSourceBaseClass {
   public $_parser = 'CRM_Csvimport_Import_Parser_Api';
   protected $_enableContactOptions = FALSE;
-  protected $_userContext = 'civicrm/csvimport/import';
+  protected $_userContext = 'civicrm/csvimporter/import';
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
   protected $_entity;
   /**
