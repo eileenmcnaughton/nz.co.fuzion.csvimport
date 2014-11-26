@@ -86,7 +86,7 @@ function csvimport_civicrm_navigationMenu(&$menu) {
     'attributes' => array (
       'label' => 'API csv Import',
       'name' => 'CSV to api bridge',
-      'url' => 'csvimporter/import',
+      'url' => 'civicrm/csvimporter/import',
       'permission' => 'administer CiviCRM',
       'operator' => null,
       'separator' => null,
