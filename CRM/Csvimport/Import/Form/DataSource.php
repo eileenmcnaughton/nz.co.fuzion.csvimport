@@ -59,10 +59,14 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
     $allEntities = civicrm_api3('entity', 'get', array());
     $creatableEntities = array();
     foreach ($allEntities['values'] as $entity) {
-      $actions = civicrm_api3($entity, 'getactions', array('entity' => $entity));
-      //can add 'submit' later when we can figure out how to specify on submit
-      if(array_intersect(array('create',), $actions['values'])) {
-        $creatableEntities[$entity] = $entity;
+      try {
+        $actions = civicrm_api3($entity, 'getactions', array('entity' => $entity));
+        //can add 'submit' later when we can figure out how to specify on submit
+        if(array_intersect(array('create',), $actions['values'])) {
+          $creatableEntities[$entity] = $entity;
+        }
+      } catch (CiviCRM_API3_Exception $e) {
+        ;
       }
     }
     $this->add('select', 'entity', ts('Entity To Import'), array('' => ts('- select -')) + $creatableEntities);
