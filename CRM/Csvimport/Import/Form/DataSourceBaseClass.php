@@ -78,14 +78,23 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
-    //Setting Upload File Size
+    // Setting Upload File Size.
     $config = CRM_Core_Config::singleton();
-    if ($config->maxImportFileSize >= 8388608) {
-      $uploadFileSize = 8388608;
-    }
-    else {
+
+    // This conditional block is important as the "maxImportFileSize" has been changed to "maxFileSize"
+    // in the newer versions. In order to remove version support, remove this block and 
+    // replace by $uploadFileSize = $config->maxFileSize.
+    if (!empty($config->maxImportFileSize)) {
       $uploadFileSize = $config->maxImportFileSize;
     }
+    else {
+      $uploadFileSize = CRM_Utils_Number::formatUnitSize($config->maxFileSize . 'm', TRUE);
+    }
+
+    if ($uploadFileSize >= 8388608) {
+      $uploadFileSize = 8388608;
+    }
+
     $uploadSize = round(($uploadFileSize / (1024 * 1024)), 2);
 
     $this->assign('uploadSize', $uploadSize);
