@@ -65,8 +65,9 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
         if(array_intersect(array('create',), $actions['values'])) {
           $creatableEntities[$entity] = $entity;
         }
-      } catch (CiviCRM_API3_Exception $e) {
-        ;
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        // Ignore entities that raise an exception
       }
     }
     $this->add('select', 'entity', ts('Entity To Import'), array('' => ts('- select -')) + $creatableEntities);
