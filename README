@@ -2,14 +2,13 @@ This provides a GUI to import to the API
 
 Usage - go to the url civicrm/csvimporter/import
 NOTE
-- you need to type in the entity you are importing to on the first screen - in a way the api recognises e.g ContributionPage, contribution_page
+- you need to type in the entity you are importing to on the first screen, in a way the api recognises e.g ContributionPage, contribution_page
 - My preference would be to put the entity name into the URL but something about the multipage form wouldn't work here
 - So, I will probably add a setting so permitted entities are defined & loaded into the select box (at some point)
 
 This extension is available as is where is. Unpaid support / upgrade guarantees are not available
 
-As the Import classes in Core are heavily copied & pasted & it is hard to separate generic code from import specific code this
-extension has 2 classes for each required class
-#1) 'BaseClass' - generally contains code that would be ideally in the import base class in cre
+As the Import classes in Core are heavily copied & pasted & it is hard to separate generic code from import specific code this extension has 2 classes for each required class:
+#1) 'BaseClass' - generally contains code that would be ideally in the import base class in core
 #2) import specific code
 
