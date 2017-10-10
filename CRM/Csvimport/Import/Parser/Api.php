@@ -48,7 +48,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    $this->_params = &$this->getActiveFieldParams();
 
    foreach ($this->_requiredFields as $requiredField) {
-     if(empty($this->_params[$requiredField])) {
+     if(empty($this->_params['id']) && empty($this->_params[$requiredField])) {
        $errorRequired = TRUE;
        $missingField .= ' ' . $requiredField;
        CRM_Contact_Import_Parser_Contact::addToErrorMsg($this->_entity, $requiredField);
