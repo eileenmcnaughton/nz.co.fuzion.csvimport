@@ -9,6 +9,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    * @var array
    */
   protected $_params = array();
+  protected $_refFields = array();
 
   function setFields() {
    $fields = civicrm_api3($this->_entity, 'getfields', array('action' => 'create'));
@@ -24,6 +25,12 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
      if(CRM_Utils_Array::value('type', $values) == 12
      || CRM_Utils_Array::value('type', $values) == 4) {
        $this->_dateFields[] = $field;
+     }
+   }
+   foreach ($this->_refFields as $field => $values) {
+     if(isset($this->_fields[$values->id])) {
+       $this->_fields[$field] = $this->_fields[$values->id];
+       $this->_fields[$values->id]['_refField'] = $values->entity_field_name;
      }
    }
    $this->_fields = array_merge(array('do_not_import' => array('title' => ts('- do not import -'))), $this->_fields);
@@ -46,7 +53,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    $errorRequired = FALSE;
    $missingField = '';
    $this->_params = &$this->getActiveFieldParams();
-
+   
    foreach ($this->_requiredFields as $requiredField) {
      if(empty($this->_params['id']) && empty($this->_params[$requiredField])) {
        $errorRequired = TRUE;
@@ -83,7 +90,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function import($onDuplicate, &$values) {
     $response = $this->summary($values);
-    $this->_params = $this->getActiveFieldParams();
+    $this->_params = $this->getActiveFieldParams(true);
     $this->formatDateParams();
     $this->_params['skipRecentView'] = TRUE;
     $this->_params['check_permissions'] = TRUE;
@@ -121,5 +128,13 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function setEntity($entity) {
     $this->_entity = $entity;
+  }
+
+  /**
+   * Set reference fields; array of ReferenceField objects
+   * @param string $entity
+   */
+  function setRefFields($val) {
+    $this->_refFields = $val;
   }
 }

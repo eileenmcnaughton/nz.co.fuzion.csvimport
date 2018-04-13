@@ -278,7 +278,17 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         $this->_activeFields[] = new CRM_Csvimport_Import_Field('', ts('- do not import -'));
       }
       else {
-        $this->_activeFields[] = clone($this->_fields[$key]);
+        if(isset($this->_refFields[$key])) {
+          $refField = $this->_refFields[$key];
+          $key = $refField->id;
+          $this->_activeFields[] = clone($this->_fields[$key]);
+          end($this->_activeFields);
+          $k = key($this->_activeFields);
+          $this->_activeFields[$k]->setRefField($refField);
+        }
+        else {
+          $this->_activeFields[] = clone($this->_fields[$key]);
+        }
       }
     }
   }
@@ -289,7 +299,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    * @return array (reference ) associative array of name/value pairs
    * @access public
    */
-  function &getActiveFieldParams() {
+  function &getActiveFieldParams($handleRef = FALSE) {
     $params = array();
     for ($i = 0; $i < $this->_activeFieldCount; $i++) {
       if (isset($this->_activeFields[$i]->_value)
@@ -297,9 +307,22 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         && !isset($this->_activeFields[$i]->_related)
       ) {
 
-        $params[$this->_activeFields[$i]->_name] = $this->_activeFields[$i]->_value;
+        if($handleRef && isset($this->_activeFields[$i]->_refField)) {
+          $refField = $this->_activeFields[$i]->_refField;
+          // get id of entity from ref field
+          $refEntityId = civicrm_api3($refField->entity_name, 'get', array(
+            'sequential' => 1,
+            'return' => array("id"),
+            $refField->entity_field_name => $this->_activeFields[$i]->_value,
+          ))['values'][0]['id'];
+          $params[$this->_activeFields[$i]->_name] = $refEntityId;
+        }
+        else {
+          $params[$this->_activeFields[$i]->_name] = $this->_activeFields[$i]->_value;
+        }
       }
     }
+
     return $params;
   }
 

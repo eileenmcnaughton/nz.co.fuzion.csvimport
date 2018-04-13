@@ -138,6 +138,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $parser = new $this->_parser($mapperKeys);
     $parser->setEntity($entity);
 
+    $parser->setRefFields($this->controller->get('refFields'));
     $mapFields = $this->get('fields');
 
     foreach ($mapper as $key => $value) {
