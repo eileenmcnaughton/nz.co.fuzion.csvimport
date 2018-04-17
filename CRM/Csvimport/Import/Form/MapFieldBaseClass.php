@@ -119,7 +119,7 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         if (isset($this->_mapperFields[$refKey]) && count($entityRefFields) <= 1) {
           continue;
         }
-        foreach ($entityRefFields as $k => $ufields) {
+        foreach ($entityRefFields as $k) {
           // skip if field name is 'id' as it would be available by default
           if($k == 'id') {
             continue;

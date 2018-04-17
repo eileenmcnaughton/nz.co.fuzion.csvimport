@@ -62,13 +62,18 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
   /**
    * Finds all reference fields for a given entity
+   *
+   * @param $entity
+   * @return array
    */
   function findAllReferenceFields($entity) {
     $referenceFields = array();
     $allEntities = civicrm_api3('Entity', 'get', array(
       'sequential' => 1,
     ))['values'];
-    if(!in_array($entity, $allEntities)) return;
+    if(!in_array($entity, $allEntities)) {
+      return $referenceFields;
+    }
 
     // Get all fields for this entity type
     $entityFields = civicrm_api3($entity, 'getfields', array(
@@ -101,20 +106,23 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
   /**
    * Finds all unique fields for a given entity
+   *
+   * @param $entity
+   * @return array
    */
   function findAllUniqueFields($entity) {
     $uniqueFields = array();
-    $entityFields = civicrm_api3($entity, 'getfields', array(
-      'api_action' => "",
-    ));
-    if($entityFields['count'] > 0) {
-      $_entityTable = reset($entityFields['values'])['table_name'];
-      $sql = 'SHOW INDEX FROM '.$_entityTable.' WHERE Non_unique = 0';
-      $uFields = CRM_Core_DAO::executeQuery($sql)->fetchAll();
-      foreach($uFields as $field) {
-        $uniqueFields[$field['Column_name']] = $entityFields['values'][$field['Column_name']]['title'];
-      }
+
+    $baoName = _civicrm_api3_get_BAO($entity);
+    $bao = new $baoName();
+    $_entityTable = $bao->tableName();
+
+    $sql = 'SHOW INDEX FROM '.$_entityTable.' WHERE Non_unique = 0';
+    $uFields = CRM_Core_DAO::executeQuery($sql)->fetchAll();
+    foreach($uFields as $field) {
+      $uniqueFields[] = $field['Column_name'];
     }
+
     return $uniqueFields;
   }
 }
