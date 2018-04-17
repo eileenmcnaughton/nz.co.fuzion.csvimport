@@ -120,7 +120,7 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     $sql = 'SHOW INDEX FROM '.$_entityTable.' WHERE Non_unique = 0';
     $uFields = CRM_Core_DAO::executeQuery($sql)->fetchAll();
     foreach($uFields as $field) {
-      $uniqueFields[] = $field['Column_name'];
+      $uniqueFields[$field['Key_name']][] = $field['Column_name'];
     }
 
     return $uniqueFields;

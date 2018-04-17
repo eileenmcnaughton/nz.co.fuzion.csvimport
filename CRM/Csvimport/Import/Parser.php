@@ -301,6 +301,9 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    */
   function &getActiveFieldParams($handleRef = FALSE) {
     $params = array();
+    $combinationRefs = array();
+    $combinationParams = array();
+
     for ($i = 0; $i < $this->_activeFieldCount; $i++) {
       if (isset($this->_activeFields[$i]->_value)
         && !isset($params[$this->_activeFields[$i]->_name])
@@ -310,11 +313,39 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         if($handleRef && isset($this->_activeFields[$i]->_refField)) {
           $refField = $this->_activeFields[$i]->_refField;
           // get id of entity from ref field
-          $refEntityId = civicrm_api3($refField->entity_name, 'get', array(
+          $apiParams = array(
             'sequential' => 1,
             'return' => array("id"),
-            $refField->entity_field_name => $this->_activeFields[$i]->_value,
-          ))['values'][0]['id'];
+          );
+          // for combination indexes
+          if(is_array($refField->entity_field_name)) {
+
+            if(!isset($combinationRefs[$refField->id])) {
+              foreach ($refField->entity_field_name as $k => $name) {
+                if($k === 'active') {
+                  continue;
+                }
+                $combinationRefs[$refField->id][] = $name;
+              }
+              sort($combinationRefs[$refField->id]);
+            }
+
+            $combinationParams[$refField->id][$refField->entity_field_name['active']] = $this->_activeFields[$i]->_value;
+            $arr = array_keys($combinationParams[$refField->id]);
+            sort($arr);
+            if($arr != $combinationRefs[$refField->id]) {
+              // continue till all reference fields for this combination are added to apiParams
+              continue;
+            }
+            else {
+              $apiParams = array_merge($apiParams, $combinationParams[$refField->id]);
+            }
+          }
+          else {
+            $apiParams[$refField->entity_field_name] = $this->_activeFields[$i]->_value;
+          }
+
+          $refEntityId = civicrm_api3($refField->entity_name, 'get', $apiParams)['values'][0]['id'];
           $params[$this->_activeFields[$i]->_name] = $refEntityId;
         }
         else {

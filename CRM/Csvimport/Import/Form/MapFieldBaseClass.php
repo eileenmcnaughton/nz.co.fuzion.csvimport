@@ -119,18 +119,39 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         if (isset($this->_mapperFields[$refKey]) && count($entityRefFields) <= 1) {
           continue;
         }
-        foreach ($entityRefFields as $k) {
+        foreach ($entityRefFields as $indexCols) {
           // skip if field name is 'id' as it would be available by default
-          if($k == 'id') {
+          if(count($indexCols) == 1 && $indexCols[0] == 'id') {
             continue;
           }
-          if (isset($this->_mapperFields[$refKey])) {
-            $label = $this->_mapperFields[$refKey];
-            $this->_mapperFields[$refKey.'#'.$k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
-          } else {
-            $this->_mapperFields[$refKey.'#'.$k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
+
+          if(count($indexCols) == 1) {
+            $k = $indexCols[0];
+            if (isset($this->_mapperFields[$refKey])) {
+              $label = $this->_mapperFields[$refKey];
+              $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
+            } else {
+              $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
+            }
+            $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
           }
-          $refFields[$refKey.'#'.$k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey.'#'.$k], $entityName, $k);
+          else if(count($indexCols) > 1) {
+            // handle combination indexes
+            if($this->_mapperFields[$refKey]) {
+              $label = $this->_mapperFields[$refKey];
+            }
+            else {
+              $label = $refKey;
+            }
+            $indexKey = '';
+            foreach ($indexCols as $col) {
+              $indexKey .= '#'.$col;
+            }
+            foreach ($indexCols as $key => $col) {
+              $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
+              $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols)+array('active' => $col));
+            }
+          }
         }
       }
     }

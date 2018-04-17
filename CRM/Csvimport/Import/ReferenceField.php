@@ -28,7 +28,7 @@ class CRM_Csvimport_Import_ReferenceField
 
   /**
    * field_name in entity
-   * @var string
+   * @var string|array
    */
   public $entity_field_name;
 
