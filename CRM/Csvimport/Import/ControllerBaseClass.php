@@ -103,27 +103,5 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
     return $referenceFields;
   }
-
-  /**
-   * Finds all unique fields for a given entity
-   *
-   * @param $entity
-   * @return array
-   */
-  function findAllUniqueFields($entity) {
-    $uniqueFields = array();
-
-    $baoName = _civicrm_api3_get_BAO($entity);
-    $bao = new $baoName();
-    $_entityTable = $bao->tableName();
-
-    $sql = 'SHOW INDEX FROM '.$_entityTable.' WHERE Non_unique = 0';
-    $uFields = CRM_Core_DAO::executeQuery($sql)->fetchAll();
-    foreach($uFields as $field) {
-      $uniqueFields[$field['Key_name']][] = $field['Column_name'];
-    }
-
-    return $uniqueFields;
-  }
 }
 

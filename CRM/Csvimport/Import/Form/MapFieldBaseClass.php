@@ -103,12 +103,12 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         foreach ($rfield as $each) {
           switch ($each['data_type']) {
             case 'ContactReference':
-              $uniqueFields['Contact'][$each['name']] = $this->controller->findAllUniqueFields('Contact');
+              $uniqueFields['Contact'][$each['name']] = civicrm_api3('Contact', 'getunique')['values'];
               break;
           }
         }
       } else {
-        $uniqueFields[$rfield['entity']][$rfield['name']] = $this->controller->findAllUniqueFields($rfield['entity']);
+        $uniqueFields[$rfield['entity']][$rfield['name']] = civicrm_api3($rfield['entity'], 'getunique')['values'];
       }
     }
 
@@ -116,9 +116,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $refFields = array();
     foreach($uniqueFields as $entityName => $entity) {
       foreach ($entity as $refKey => $entityRefFields) {
-        if (isset($this->_mapperFields[$refKey]) && count($entityRefFields) <= 1) {
-          continue;
-        }
         foreach ($entityRefFields as $indexCols) {
           // skip if field name is 'id' as it would be available by default
           if(count($indexCols) == 1 && $indexCols[0] == 'id') {
