@@ -53,7 +53,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    $errorRequired = FALSE;
    $missingField = '';
    $this->_params = &$this->getActiveFieldParams();
-   
+
    foreach ($this->_requiredFields as $requiredField) {
      if(empty($this->_params['id']) && empty($this->_params[$requiredField])) {
        $errorRequired = TRUE;
@@ -95,14 +95,17 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     $this->_params['skipRecentView'] = TRUE;
     $this->_params['check_permissions'] = TRUE;
 
-    try{
-      civicrm_api3($this->_entity, 'create', $this->_params);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      array_unshift($values, $error);
-      return CRM_Import_Parser::ERROR;
-    }
+    $queueParams = array(
+      'entity' => $this->_entity,
+      'params' => $this->_params,
+    );
+    $task = new CRM_Queue_Task(
+      array('CRM_Csvimport_Import_Task', 'ImportEntity'),
+      $queueParams,
+      ts('Importing entity') . ': ' . $this->_lineCount
+    );
+    $this->_queue->createItem($task);
+
   }
 
   /**

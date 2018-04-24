@@ -185,6 +185,25 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
       $urlParams = 'type=' . CRM_Import_Parser::NO_MATCH . $this->_importParserUrl;
       $this->set('downloadMismatchRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
     }
+    // run importer queue
+    $this->runQueue();
   }
+
+  /**
+   * Run all tasks in importer queue
+   */
+  private function runQueue() {
+    //retrieve the queue
+    $queue = CRM_Csvimport_Import_Queue::singleton()->getQueue();
+    $runner = new CRM_Queue_Runner(array(
+      'title' => ts('CSVImport Queue Runner'), //title fo the queue
+      'queue' => $queue, //the queue object
+      'errorMode'=> CRM_Queue_Runner::ERROR_ABORT, //abort upon error and keep task in queue
+      'onEndUrl' => CRM_Utils_System::url('civicrm/csvimporter/import', array('_qf_Summary_display' => true, 'qfKey' => $this->controller->_key), FALSE, NULL, FALSE), //go to page after all tasks are finished
+    ));
+
+    $runner->runAllViaWeb(); // does not return
+  }
+
 }
 

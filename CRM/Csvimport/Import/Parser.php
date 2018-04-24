@@ -65,6 +65,13 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    */
   protected $_haveColumnHeader;
 
+  /**
+   * The queue used to process the import
+   *
+   * @var CRM_Csvimport_Import_Queue
+   */
+  protected $_queue;
+
   function run($fileName,
     $separator = ',',
     &$mapper,
@@ -345,8 +352,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
             $apiParams[$refField->entity_field_name] = $this->_activeFields[$i]->_value;
           }
 
-          $refEntityId = civicrm_api3($refField->entity_name, 'get', $apiParams)['values'][0]['id'];
-          $params[$this->_activeFields[$i]->_name] = $refEntityId;
+          $params[$this->_activeFields[$i]->_name] = array('api.' . $refField->entity_name . '.get' => $apiParams);
         }
         else {
           $params[$this->_activeFields[$i]->_name] = $this->_activeFields[$i]->_value;
