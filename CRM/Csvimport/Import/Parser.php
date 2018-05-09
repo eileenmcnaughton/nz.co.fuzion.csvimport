@@ -371,7 +371,16 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
 
       //$tempField = CRM_Contact_BAO_Contact::importableFields('Individual', null );
       $tempField = CRM_Contact_BAO_Contact::importableFields('All', NULL);
-      if (!array_key_exists($name, $tempField)) {
+
+      // check reference fields
+      $isRef = false;
+      foreach ($this->_refFields as $ref) {
+        if ($name == $ref->id) {
+          $isRef = true;
+        }
+      }
+
+      if (!array_key_exists($name, $tempField) || $isRef) {
         $this->_fields[$name] = new CRM_Csvimport_Import_Field($name, $title, $type, $headerPattern, $dataPattern);
       }
       else {

@@ -39,6 +39,24 @@
 // non - b form ie. this is working as the base import class that doesn't seem to exist
 class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
+  public static $specialCaseFields = array(
+    'MembershipType' => array(
+      'membership_type_id' => 'name',
+    ),
+    'Address' => array(
+      'master_id' => array(
+        'contact_id',
+        'external_identifier', // special case; handled in import task
+      ),
+    ),
+    'County' => array(
+      'county_id' => 'name',
+    ),
+    'StateProvince' => array(
+      'state_province_id' => 'name',
+    ),
+  );
+
   /**
    * class constructor
    */
@@ -102,6 +120,13 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     }
 
     return $referenceFields;
+  }
+
+  function getSpecialCaseFields($entity) {
+    if(isset(self::$specialCaseFields[$entity])) {
+      return self::$specialCaseFields[$entity];
+    }
+    return null;
   }
 }
 

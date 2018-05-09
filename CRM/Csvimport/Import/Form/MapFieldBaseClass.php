@@ -109,6 +109,19 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         }
       } else {
         $uniqueFields[$rfield['entity']][$rfield['name']] = civicrm_api3($rfield['entity'], 'getunique')['values'];
+        $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
+        if($extraFields) {
+          foreach($extraFields as $k => $extraField) {
+            if(is_array($extraField)) {
+              foreach ($extraField as $each) {
+                $uniqueFields[$rfield['entity']][$k][] = array($each);
+              }
+            }
+            else {
+              $uniqueFields[$rfield['entity']][$k][] = array($extraField);
+            }
+          }
+        }
       }
     }
 

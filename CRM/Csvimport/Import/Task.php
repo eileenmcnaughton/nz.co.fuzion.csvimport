@@ -24,6 +24,22 @@ class CRM_Csvimport_Import_Task {
         $key = key($param);
         if (strpos($key, 'api.') === 0 && strpos($key, '.get') === (strlen($key) - 4)) {
           $refEntity = substr($key, 4, strlen($key) - 8);
+
+          // special case: handle 'Master Address Belongs To' field using contact external_id
+          if($refEntity == 'Address' && isset($param[$key]['external_identifier'])) {
+            try {
+              $res = civicrm_api3('Contact', 'get', $param[$key]);
+            }
+            catch (CiviCRM_API3_Exception $e) {
+              $error = $e->getMessage();
+              array_unshift($values, $error);
+              CRM_Core_Session::setStatus('Error handling \'Master Address Belongs To\'! (' . $error . ')', 'Queue task', 'error');
+              return false;
+            }
+            $param[$key]['contact_id'] = $res['values'][0]['id'];
+            unset($param[$key]['external_identifier']);
+          }
+
           try{
             $data = civicrm_api3($refEntity, 'get', $param[$key]);
           }
