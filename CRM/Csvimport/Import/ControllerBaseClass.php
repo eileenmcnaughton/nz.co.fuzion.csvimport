@@ -128,5 +128,21 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     }
     return null;
   }
+
+  function findAllUniqueFields($entity) {
+    $uniqueFields = array();
+
+    $dao = _civicrm_api3_get_DAO($entity);
+    $uFields = $dao::indices();
+
+    foreach($uFields as $fieldKey => $field) {
+      if(!isset($field['unique']) || !$field['unique']) {
+        continue;
+      }
+      $uniqueFields[$fieldKey] = $field['field'];
+    }
+
+    return $uniqueFields;
+  }
 }
 
