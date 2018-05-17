@@ -72,6 +72,12 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    */
   protected $_queue;
 
+  /**
+   * Set max errors count
+   */
+  const MAX_ERRORS = 250;
+  protected $_maxErrorCount = self::MAX_ERRORS;
+
   function run($fileName,
     $separator = ',',
     &$mapper,

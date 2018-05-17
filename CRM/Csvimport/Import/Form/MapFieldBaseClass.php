@@ -548,6 +548,11 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     //not sure we need this - trying to figure out how to pass the entity right through the multi-part form
     $this->set('_entity', $this->_entity);
 
+    //remove items that were not processed on previous import (maybe due to errors)
+    $queueClass = 'CRM_Queue_Queue_'.CRM_Csvimport_Import_Queue::QUEUE_TYPE;
+    $prevQueue = new $queueClass(array('name' => CRM_Csvimport_Import_Queue::QUEUE_NAME));
+    $prevQueue->deleteQueue();
+
     $parser = new $this->_parser($mapperKeysMain);
     $parser->setRefFields($this->controller->get('refFields'));
     $parser->setEntity($this->_entity);
