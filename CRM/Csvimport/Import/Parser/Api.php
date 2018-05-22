@@ -67,23 +67,6 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     return CRM_Import_Parser::ERROR;
    }
 
-    // do field validation for options fields
-    $validation = $this->validateFields($this->_params);
-    foreach ($validation as $fieldName => $valInfo) {
-     if ($valInfo['error']) {
-       array_unshift($values, $valInfo['error']);
-       return CRM_Import_Parser::ERROR;
-     }
-      if (isset($valInfo['valueUpdated'])) {
-        // if 'label' is used instead of 'name' or if multivalued fields using '|'
-        foreach ($this->_activeFields as $index => $activeField) {
-          if ($this->_activeFields[$index]->_name == $valInfo['valueUpdated']['field']) {
-            $this->_activeFields[$index]->setValue($valInfo['valueUpdated']['value']);
-          }
-        }
-      }
-    }
-
    $errorMessage = NULL;
    //@todo add a validate fn to the apis so that we can dry run against them to check
    // pseudoconstants
@@ -117,11 +100,11 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
       'params' => $this->_params,
     );
     $task = new CRM_Queue_Task(
-      array('CRM_Csvimport_Import_Task', 'ImportEntity'),
+      array('CRM_Csvimport_Task_Import', 'ImportEntity'),
       $queueParams,
       ts('Importing entity') . ': ' . $this->_lineCount
     );
-    $this->_queue->createItem($task);
+    $this->_importQueue->createItem($task);
 
   }
 
@@ -158,73 +141,4 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     $this->_refFields = $val;
   }
 
-  /**
-   * Validates field-value pairs before importing
-   *
-   * @param $params
-   * @return array
-   * @throws CiviCRM_API3_Exception
-   */
-  function validateFields($params) {
-    $opFields = civicrm_api3($this->_entity, 'getfields', array(
-      'api_action' => "getoptions",
-      'options' => array('get_options' => "all", 'get_options_context' => "match", 'params' => array()),
-      'params' => array(),
-    ))['values']['field']['options'];
-    $opFields = array_keys($opFields);
-    $valInfo = array();
-    foreach ($params as $fieldName => $value) {
-      if(in_array($fieldName, $opFields)) {
-        $valInfo[$fieldName] = $this->validateField($fieldName, $value);
-      }
-    }
-
-    return $valInfo;
-  }
-
-  /**
-   * Validates given option/value field against allowed values
-   * Also handles multi valued fields separated by '|'
-   *
-   * @param $field
-   * @param $value
-   * @return array
-   * @throws CiviCRM_API3_Exception
-   */
-  private function validateField($field, $value) {
-    $options = civicrm_api3($this->_entity, 'getoptions', array(
-      'field' => $field,
-      'context' => "match",
-    ))['values'];
-    $value = explode('|', $value);
-    $optionKeys = array_keys($options);
-    $valueUpdated = FALSE;
-    $isValid = TRUE;
-
-    foreach ($value as $k => $mval) {
-      if(!in_array($mval, $optionKeys)) {
-        $isValid = FALSE;
-        // check 'label' if 'name' not found
-        foreach ($options as $name => $label) {
-          if($mval == $label) {
-            $value[$k] = $name;
-            $valueUpdated = TRUE;
-            $isValid = TRUE;
-          }
-        }
-        if(!$isValid) {
-          return array('error' => ts('Invalid value for field') . ' (' . $field . ') => ' . $mval);
-        }
-      }
-    }
-
-    if(count($value) == 1) {
-      if(!$valueUpdated) {
-        return array('error' => 0);
-      }
-      $value = array_pop($value);
-    }
-
-    return array('error' => 0, 'valueUpdated' => array('field' => $field, 'value' => $value));
-  }
 }

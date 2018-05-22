@@ -549,8 +549,8 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $this->set('_entity', $this->_entity);
 
     //remove items that were not processed on previous import (maybe due to errors)
-    $queueClass = 'CRM_Queue_Queue_'.CRM_Csvimport_Import_Queue::QUEUE_TYPE;
-    $prevQueue = new $queueClass(array('name' => CRM_Csvimport_Import_Queue::QUEUE_NAME));
+    $queueClass = 'CRM_Queue_Queue_'.CRM_Csvimport_Queue_Import::QUEUE_TYPE;
+    $prevQueue = new $queueClass(array('name' => CRM_Csvimport_Queue_Import::QUEUE_NAME));
     $prevQueue->deleteQueue();
 
     $parser = new $this->_parser($mapperKeysMain);

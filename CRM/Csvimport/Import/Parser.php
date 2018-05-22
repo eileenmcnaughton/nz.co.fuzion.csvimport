@@ -70,7 +70,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    *
    * @var CRM_Csvimport_Import_Queue
    */
-  protected $_queue;
+  protected $_importQueue;
 
   /**
    * Set max errors count

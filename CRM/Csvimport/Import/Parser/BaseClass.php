@@ -64,7 +64,7 @@ class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser 
    */
   function init() {
     // set queue
-    $this->_queue = CRM_Csvimport_Import_Queue::singleton()->getQueue();
+    $this->_importQueue = CRM_Csvimport_Queue_Import::singleton()->getQueue();
 
     $this->setFields();
     $fields = $this->_fields;

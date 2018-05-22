@@ -1,8 +1,8 @@
 <?php
 
-class CRM_Csvimport_Import_Queue {
+class CRM_Csvimport_Queue_Import {
 
-  const QUEUE_NAME = 'csvimport.queue';
+  const QUEUE_NAME = 'csvimport.queue.import';
 
   const QUEUE_TYPE = 'Sql';
 
@@ -15,7 +15,7 @@ class CRM_Csvimport_Import_Queue {
    */
   public static function singleton() {
     if (!self::$singleton) {
-      self::$singleton = new CRM_Csvimport_Import_Queue();
+      self::$singleton = new CRM_Csvimport_Queue_Import();
     }
     return self::$singleton;
   }
@@ -35,4 +35,3 @@ class CRM_Csvimport_Import_Queue {
     return $this->queue;
   }
 }
-
