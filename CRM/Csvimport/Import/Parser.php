@@ -73,6 +73,13 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
   protected $_importQueue;
 
   /**
+   * Import queue batch size - number of items to precess each time
+   *
+   * @var CRM_Csvimport_Import_Queue
+   */
+  protected $_importQueueBatchSize;
+
+  /**
    * Set max errors count
    */
   const MAX_ERRORS = 250;
@@ -228,6 +235,11 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       if ($this->_maxLinesToProcess > 0 && $this->_validCount >= $this->_maxLinesToProcess) {
         break;
       }
+    }
+
+    // parsing is done; if mode is import, add last items in batch to queue
+    if ($mode == self::MODE_IMPORT) {
+      $this->addBatchToQueue();
     }
 
     fclose($fd);

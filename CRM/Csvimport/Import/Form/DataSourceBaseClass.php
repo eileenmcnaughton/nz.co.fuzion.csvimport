@@ -151,6 +151,7 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
       )
     );
     $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), array('size' => 2));
+    $this->addElement('text', 'queueBatchSize', ts('Number Of Items To Process For Each Queue Item'), array('size' => 3));
     //build date formats
     CRM_Core_Form_Date::buildAllowedDateFormats($this);
 
@@ -185,12 +186,15 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $dateFormats      = $this->controller->exportValue($this->_name, 'dateFormats');
     $savedMapping     = $this->controller->exportValue($this->_name, 'savedMapping');
     $entity     = $this->controller->exportValue($this->_name, 'entity');
+    $queueBatchSize   = $this->controller->exportValue($this->_name, 'queueBatchSize');
 
     $this->set('onDuplicate', $onDuplicate);
     $this->set('contactType', $contactType);
     $this->set('dateFormats', $dateFormats);
     $this->set('savedMapping', $savedMapping);
     $this->set('_entity', $entity);
+
+    $this->controller->set('queueBatchSize', $queueBatchSize);
 
     $session = CRM_Core_Session::singleton();
     $session->set("dateTypes", $dateFormats);

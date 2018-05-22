@@ -141,6 +141,9 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $parser->setRefFields($this->controller->get('refFields'));
     $mapFields = $this->get('fields');
 
+    $queueBatchSize = $this->controller->exportValue('DataSource', 'queueBatchSize');
+    $parser->setImportQueueBatchSize($this->controller->get('queueBatchSize'));
+
     foreach ($mapper as $key => $value) {
       $header = array();
       if (isset($mapFields[$mapper[$key][0]])) {

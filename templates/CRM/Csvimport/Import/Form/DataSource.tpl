@@ -69,6 +69,14 @@
         <td class="label">{$form.fieldSeparator.label}</td>
         <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
       </tr>
+      <tr class="crm-import-datasource-form-block-queueBatchSize">
+        <td class="label">{$form.queueBatchSize.label}</td>
+        <td>{$form.queueBatchSize.html} <br/>
+          <span class="description">
+            {ts}This is the number of rows to process in each queue item. (Eg. 10){/ts}
+          </span>
+        </td>
+      </tr>
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>

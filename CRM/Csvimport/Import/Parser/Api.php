@@ -10,6 +10,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   protected $_params = array();
   protected $_refFields = array();
+  protected $_importQueueBatch = array();
 
   function setFields() {
    $fields = civicrm_api3($this->_entity, 'getfields', array('action' => 'create'));
@@ -95,16 +96,10 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     $this->_params['skipRecentView'] = TRUE;
     $this->_params['check_permissions'] = TRUE;
 
-    $queueParams = array(
-      'entity' => $this->_entity,
-      'params' => $this->_params,
-    );
-    $task = new CRM_Queue_Task(
-      array('CRM_Csvimport_Task_Import', 'ImportEntity'),
-      $queueParams,
-      ts('Importing entity') . ': ' . $this->_lineCount
-    );
-    $this->_importQueue->createItem($task);
+    if(count($this->_importQueueBatch) >= $this->getImportQueueBatchSize()) {
+      $this->addBatchToQueue();
+    }
+    $this->addToBatch($this->_params);
 
   }
 
@@ -139,6 +134,50 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function setRefFields($val) {
     $this->_refFields = $val;
+  }
+
+  /**
+   * Set batch size for import queue
+   * @param $size
+   */
+  function setImportQueueBatchSize($size) {
+    $this->_importQueueBatchSize = $size;
+  }
+
+  /**
+   * Get batch size for import queue
+   * @return int
+   */
+  function getImportQueueBatchSize() {
+    if($this->_importQueueBatchSize) {
+      return $this->_importQueueBatchSize;
+    }
+    return 1;
+  }
+
+  /**
+   * Add an item to current import batch
+   * @param $item
+   */
+  function addToBatch($item) {
+    $this->_importQueueBatch[] = $item;
+  }
+
+  /**
+   * Add all items in current batch to queue
+   */
+  function addBatchToQueue() {
+    $queueParams = array(
+      'entity' => $this->_entity,
+      'params' => $this->_importQueueBatch,
+    );
+    $task = new CRM_Queue_Task(
+      array('CRM_Csvimport_Task_Import', 'ImportEntity'),
+      $queueParams,
+      ts('Importing entity') . ': ' . $this->_lineCount
+    );
+    $this->_importQueue->createItem($task);
+    $this->_importQueueBatch = array();
   }
 
 }

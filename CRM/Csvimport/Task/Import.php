@@ -7,75 +7,75 @@ class CRM_Csvimport_Task_Import {
    *
    * @param CRM_Queue_TaskContext $ctx
    * @param $entity
-   * @param $params
+   * @param $batch
    * @return bool
    */
-  public static function ImportEntity(CRM_Queue_TaskContext $ctx, $entity, $params) {
+  public static function ImportEntity(CRM_Queue_TaskContext $ctx, $entity, $batch) {
 
-    if( !$entity || !isset($params)) {
+    if( !$entity || !isset($batch)) {
       CRM_Core_Session::setStatus('Invalid params supplied to import queue!', 'Queue task - Init', 'error');
       return false;
     }
 
-    // add validation for options select fields
-    $validation = self::validateFields($entity, $params);
-    foreach ($validation as $fieldName => $valInfo) {
-      if ($valInfo['error']) {
-        // remove this row from active fields
-        CRM_Core_Session::setStatus($valInfo['error'], 'Queue task - Validation', 'error');
-        return false;
-      }
-      if (isset($valInfo['valueUpdated'])) {
-        // if 'label' is used instead of 'name' or if multivalued fields using '|'
-        $params[$valInfo['valueUpdated']['field']] = $valInfo['valueUpdated']['value'];
-      }
-    }
-
-    // check for api chaining in params and run them separately
-    foreach ($params as $k => $param) {
-      if(is_array($param) && count($param) == 1) {
-        reset($param);
-        $key = key($param);
-        if (strpos($key, 'api.') === 0 && strpos($key, '.get') === (strlen($key) - 4)) {
-          $refEntity = substr($key, 4, strlen($key) - 8);
-
-          // special case: handle 'Master Address Belongs To' field using contact external_id
-          if($refEntity == 'Address' && isset($param[$key]['external_identifier'])) {
-            try {
-              $res = civicrm_api3('Contact', 'get', $param[$key]);
-            }
-            catch (CiviCRM_API3_Exception $e) {
-              $error = $e->getMessage();
-              array_unshift($values, $error);
-              CRM_Core_Session::setStatus('Error handling \'Master Address Belongs To\'! (' . $error . ')', 'Queue task - Import', 'error');
-              return false;
-            }
-            $param[$key]['contact_id'] = $res['values'][0]['id'];
-            unset($param[$key]['external_identifier']);
-          }
-
-          try{
-            $data = civicrm_api3($refEntity, 'get', $param[$key]);
-          }
-          catch (CiviCRM_API3_Exception $e) {
-            $error = $e->getMessage();
-            array_unshift($values, $error);
-            CRM_Core_Session::setStatus('Error with referenced entity "get"! (' . $error . ')', 'Queue task - Import', 'error');
-            return false;
-          }
-          $params[$k] = $data['values'][0]['id'];
+    // process items from batch
+    foreach ($batch as $params) {
+      // add validation for options select fields
+      $validation = self::validateFields($entity, $params);
+      foreach ($validation as $fieldName => $valInfo) {
+        if ($valInfo['error']) {
+          // remove this row from active fields
+          CRM_Core_Session::setStatus($valInfo['error'], 'Queue task - Validation', 'error');
+          return false;
+        }
+        if (isset($valInfo['valueUpdated'])) {
+          // if 'label' is used instead of 'name' or if multivalued fields using '|'
+          $params[$valInfo['valueUpdated']['field']] = $valInfo['valueUpdated']['value'];
         }
       }
-    }
 
-    try{
-      civicrm_api3($entity, 'create', $params);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      array_unshift($values, $error);
-      CRM_Core_Session::setStatus('Error with entity "create"! (' . $error . ')', 'Queue task - Import', 'error');
-      return false;
+      // check for api chaining in params and run them separately
+      foreach ($params as $k => $param) {
+        if (is_array($param) && count($param) == 1) {
+          reset($param);
+          $key = key($param);
+          if (strpos($key, 'api.') === 0 && strpos($key, '.get') === (strlen($key) - 4)) {
+            $refEntity = substr($key, 4, strlen($key) - 8);
+
+            // special case: handle 'Master Address Belongs To' field using contact external_id
+            if ($refEntity == 'Address' && isset($param[$key]['external_identifier'])) {
+              try {
+                $res = civicrm_api3('Contact', 'get', $param[$key]);
+              } catch (CiviCRM_API3_Exception $e) {
+                $error = $e->getMessage();
+                array_unshift($values, $error);
+                CRM_Core_Session::setStatus('Error handling \'Master Address Belongs To\'! (' . $error . ')', 'Queue task - Import', 'error');
+                return false;
+              }
+              $param[$key]['contact_id'] = $res['values'][0]['id'];
+              unset($param[$key]['external_identifier']);
+            }
+
+            try {
+              $data = civicrm_api3($refEntity, 'get', $param[$key]);
+            } catch (CiviCRM_API3_Exception $e) {
+              $error = $e->getMessage();
+              array_unshift($values, $error);
+              CRM_Core_Session::setStatus('Error with referenced entity "get"! (' . $error . ')', 'Queue task - Import', 'error');
+              return false;
+            }
+            $params[$k] = $data['values'][0]['id'];
+          }
+        }
+      }
+
+      try {
+        civicrm_api3($entity, 'create', $params);
+      } catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        array_unshift($values, $error);
+        CRM_Core_Session::setStatus('Error with entity "create"! (' . $error . ')', 'Queue task - Import', 'error');
+        return false;
+      }
     }
 
     return true;
