@@ -201,7 +201,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $runner = new CRM_Queue_Runner(array(
       'title' => ts('CSVImport Queue Runner - Import'), //title fo the queue
       'queue' => $queue, //the queue object
-      'errorMode'=> CRM_Queue_Runner::ERROR_ABORT, //abort upon error and keep task in queue
+      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE, // continue on error
       'onEndUrl' => CRM_Utils_System::url('civicrm/csvimporter/import', array('_qf_Summary_display' => true, 'qfKey' => $this->controller->_key), FALSE, NULL, FALSE), //go to page after all tasks are finished
     ));
 

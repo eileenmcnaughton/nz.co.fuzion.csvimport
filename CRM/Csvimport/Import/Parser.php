@@ -96,6 +96,8 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       CRM_Core_Error::fatal();
     }
     $fileName = $fileName['name'];
+    $this->_fileName = $fileName;
+    $this->_errorFileName = self::errorFileName(self::ERROR);
 
     $this->init();
 
@@ -237,11 +239,6 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       }
     }
 
-    // parsing is done; if mode is import, add last items in batch to queue
-    if ($mode == self::MODE_IMPORT) {
-      $this->addBatchToQueue();
-    }
-
     fclose($fd);
 
 
@@ -254,6 +251,18 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
           $customHeaders[$key] = $customFields[$id][0];
         }
       }
+
+      if ($mode == self::MODE_IMPORT) {
+        // parsing is done; if mode is import, add last items in batch to queue
+        $this->addBatchToQueue();
+        $importErrorHeaders = array_merge(
+          array(ts('Reason')),
+          $customHeaders
+        );
+        // add headers to error file for import mode
+        self::exportCSV($this->_errorFileName, $importErrorHeaders, array());
+      }
+
       if ($this->_invalidRowCount) {
         // removed view url for invalid contacts
         $headers = array_merge(array(ts('Line Number'),
@@ -261,7 +270,6 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
           ),
           $customHeaders
         );
-        $this->_errorFileName = self::errorFileName(self::ERROR);
         self::exportCSV($this->_errorFileName, $headers, $this->_errors);
       }
       if ($this->_conflictCount) {
@@ -504,6 +512,9 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       $output[] = implode($config->fieldSeparator, $datum);
     }
     fwrite($fd, implode("\n", $output));
+    if(count($data) == 0) {
+      fwrite($fd, "\n");
+    }
     fclose($fd);
   }
 
