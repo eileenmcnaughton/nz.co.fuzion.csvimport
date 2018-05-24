@@ -23,14 +23,15 @@ class CRM_Csvimport_Task_Import {
     // process items from batch
     foreach ($batch as $params) {
       $error = NULL;
+      $origParams = self::getOriginalParams($params);
 
       // add validation for options select fields
       $validation = self::validateFields($entity, $params);
       foreach ($validation as $fieldName => $valInfo) {
         if ($valInfo['error']) {
           // remove this row from active fields
-          array_unshift($params, $valInfo['error']);
-          $error = $params;
+          array_unshift($origParams, $valInfo['error']);
+          $error = $origParams;
           break;
         }
         if (isset($valInfo['valueUpdated'])) {
@@ -60,8 +61,8 @@ class CRM_Csvimport_Task_Import {
               } catch (CiviCRM_API3_Exception $e) {
                 $error = $e->getMessage();
                 $m = 'Error handling \'Master Address Belongs To\'! (' . $error . ')';
-                array_unshift($params, $m);
-                $error = $params;
+                array_unshift($origParams, $m);
+                $error = $origParams;
                 break;
               }
               $param[$key]['contact_id'] = $res['values'][0]['id'];
@@ -73,8 +74,8 @@ class CRM_Csvimport_Task_Import {
             } catch (CiviCRM_API3_Exception $e) {
               $error = $e->getMessage();
               $m = 'Error with referenced entity "get"! (' . $error . ')';
-              array_unshift($params, $m);
-              $error = $params;
+              array_unshift($origParams, $m);
+              $error = $origParams;
               break;
             }
             $params[$k] = $data['values'][0]['id'];
@@ -92,10 +93,9 @@ class CRM_Csvimport_Task_Import {
         civicrm_api3($entity, 'create', $params);
       } catch (CiviCRM_API3_Exception $e) {
         $error = $e->getMessage();
-        array_unshift($values, $error);
         $m = 'Error with entity "create"! (' . $error . ')';
-        array_unshift($params, $m);
-        $errors[] = $params;
+        array_unshift($origParams, $m);
+        $errors[] = $origParams;
         continue;
       }
     }
@@ -188,6 +188,31 @@ class CRM_Csvimport_Task_Import {
       fputcsv($file, $item);
     }
     fclose($file);
+  }
+
+  /**
+   * Try to build the source csv row from $params
+   * (todo: Doesnt work well for combinational reference fields)
+   * @param $params
+   * @return mixed
+   */
+  private static function getOriginalParams($params) {
+    foreach ($params as $name => $param) {
+      if(!is_array($param)) {
+        continue;
+      }
+      // reference field
+      $items = array_shift($param);
+      foreach ($items as $k => $v) {
+        if($k == 'sequential' || $k == 'return') {
+          continue;
+        }
+        else {
+          $params[$name] = $v;
+        }
+      }
+    }
+    return $params;
   }
 
 }
