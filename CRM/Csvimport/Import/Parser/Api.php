@@ -99,7 +99,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     if(count($this->_importQueueBatch) >= $this->getImportQueueBatchSize()) {
       $this->addBatchToQueue();
     }
-    $this->addToBatch($this->_params);
+    $this->addToBatch($this->_params, $values);
 
   }
 
@@ -159,7 +159,8 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    * Add an item to current import batch
    * @param $item
    */
-  function addToBatch($item) {
+  function addToBatch($item, $values) {
+    $item['rowValues'] = $values;
     $this->_importQueueBatch[] = $item;
   }
 

@@ -23,7 +23,8 @@ class CRM_Csvimport_Task_Import {
     // process items from batch
     foreach ($batch as $params) {
       $error = NULL;
-      $origParams = self::getOriginalParams($params);
+      $origParams = $params['rowValues'];
+      unset($params['rowValues']);
 
       // add validation for options select fields
       $validation = self::validateFields($entity, $params);
@@ -188,31 +189,6 @@ class CRM_Csvimport_Task_Import {
       fputcsv($file, $item);
     }
     fclose($file);
-  }
-
-  /**
-   * Try to build the source csv row from $params
-   * (todo: Doesnt work well for combinational reference fields)
-   * @param $params
-   * @return mixed
-   */
-  private static function getOriginalParams($params) {
-    foreach ($params as $name => $param) {
-      if(!is_array($param)) {
-        continue;
-      }
-      // reference field
-      $items = array_shift($param);
-      foreach ($items as $k => $v) {
-        if($k == 'sequential' || $k == 'return') {
-          continue;
-        }
-        else {
-          $params[$name] = $v;
-        }
-      }
-    }
-    return $params;
   }
 
 }
