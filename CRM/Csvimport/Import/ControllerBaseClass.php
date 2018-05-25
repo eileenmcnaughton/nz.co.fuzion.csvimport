@@ -129,7 +129,13 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     return null;
   }
 
-  function findAllUniqueFields($entity) {
+  /**
+   * Returns all unique fields of given entity
+   * (this is added to core as an api 'getuique' but not available in a stable release)
+   * @param $entity
+   * @return array
+   */
+  public static function findAllUniqueFields($entity) {
     $uniqueFields = array();
 
     $dao = _civicrm_api3_get_DAO($entity);

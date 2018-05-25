@@ -77,6 +77,14 @@
           </span>
         </td>
       </tr>
+      <tr class="crm-import-datasource-form-block-allowEntityUpdate">
+        <td class="label">{$form.allowEntityUpdate.label}</td>
+        <td>{$form.allowEntityUpdate.html} <br/>
+          <span class="description">
+            {ts}Allow updating an existing entity using unique fields to match (Eg. external_id). By default updating is possible if 'id' is used.{/ts}
+          </span>
+        </td>
+      </tr>
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>

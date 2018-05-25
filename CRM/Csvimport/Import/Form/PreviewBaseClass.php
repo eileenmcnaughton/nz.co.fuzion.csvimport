@@ -144,6 +144,8 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $queueBatchSize = $this->controller->exportValue('DataSource', 'queueBatchSize');
     $parser->setImportQueueBatchSize($this->controller->get('queueBatchSize'));
 
+    $parser->setAllowEntityUpdate($this->controller->get('allowEntityUpdate'));
+
     foreach ($mapper as $key => $value) {
       $header = array();
       if (isset($mapFields[$mapper[$key][0]])) {

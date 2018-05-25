@@ -11,6 +11,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
   protected $_params = array();
   protected $_refFields = array();
   protected $_importQueueBatch = array();
+  protected $_allowEntityUpdate = FALSE;
 
   function setFields() {
    $fields = civicrm_api3($this->_entity, 'getfields', array('action' => 'create'));
@@ -161,6 +162,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function addToBatch($item, $values) {
     $item['rowValues'] = $values;
+    $item['allowUpdate'] = $this->_allowEntityUpdate;
     $this->_importQueueBatch[] = $item;
   }
 
@@ -180,6 +182,14 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
     );
     $this->_importQueue->createItem($task);
     $this->_importQueueBatch = array();
+  }
+
+  /**
+   * Set if entities can be updated using unique fields
+   * @param $size
+   */
+  function setAllowEntityUpdate($update) {
+    $this->_allowEntityUpdate = $update;
   }
 
 }

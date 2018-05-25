@@ -25,6 +25,8 @@ class CRM_Csvimport_Task_Import {
       $error = NULL;
       $origParams = $params['rowValues'];
       unset($params['rowValues']);
+      $allowUpdate = $params['allowUpdate'];
+      unset($params['allowUpdate']);
 
       // add validation for options select fields
       $validation = self::validateFields($entity, $params);
@@ -88,6 +90,41 @@ class CRM_Csvimport_Task_Import {
       if($error) {
         $errors[] = $error;
         continue;
+      }
+
+      // Check if entity needs to be updated/created
+      if($allowUpdate) {
+        $uniqueFields = CRM_Csvimport_Import_ControllerBaseClass::findAllUniqueFields($entity);
+        foreach ($uniqueFields as $uniqueField) {
+          $fieldCount = 0;
+          $tmp = array();
+
+          foreach ($uniqueField as $name) {
+            if (isset($params[$name])) {
+              $fieldCount++;
+              $tmp[$name] = $params[$name];
+            }
+          }
+
+          if (count($uniqueField) == $fieldCount) {
+            // unique field found; check if it entity exists
+            try {
+              $tmp['sequential'] = 1;
+              $tmp['return'] = array('id');
+              $existingEntity = civicrm_api3($entity, 'get', $tmp);
+            } catch (CiviCRM_API3_Exception $e) {
+              $error = $e->getMessage();
+              $m = 'Error with entity "get"! (' . $error . ')';
+              array_unshift($origParams, $m);
+              $errors[] = $origParams;
+              continue;
+            }
+            if (isset($existingEntity['values'][0]['id'])) {
+              $params['id'] = $existingEntity['values'][0]['id'];
+              break;
+            }
+          }
+        }
       }
 
       try {
