@@ -170,6 +170,9 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    * Add all items in current batch to queue
    */
   function addBatchToQueue() {
+    if(count($this->_importQueueBatch) == 0) {
+      return;
+    }
     $queueParams = array(
       'entity' => $this->_entity,
       'params' => $this->_importQueueBatch,

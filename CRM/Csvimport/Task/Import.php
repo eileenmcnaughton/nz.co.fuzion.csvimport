@@ -30,9 +30,13 @@ class CRM_Csvimport_Task_Import {
 
       // add validation for options select fields
       $validation = self::validateFields($entity, $params);
+      if(isset($validation['error'])) {
+        array_unshift($origParams, $validation['error']);
+        $error = $origParams;
+        $validation = array();
+      }
       foreach ($validation as $fieldName => $valInfo) {
         if ($valInfo['error']) {
-          // remove this row from active fields
           array_unshift($origParams, $valInfo['error']);
           $error = $origParams;
           break;
@@ -139,7 +143,10 @@ class CRM_Csvimport_Task_Import {
     }
 
     if(count($errors) > 0) {
-      self::addErrorsToReport($errFileName, $errors);
+      $ret = self::addErrorsToReport($errFileName, $errors);
+      if(isset($ret['error'])) {
+        CRM_Core_Session::setStatus($ret['error'], 'Queue task', 'error');
+      }
     }
     return true;
   }
@@ -149,14 +156,18 @@ class CRM_Csvimport_Task_Import {
    *
    * @param $params
    * @return array
-   * @throws CiviCRM_API3_Exception
    */
   private static function validateFields($entity, $params) {
-    $opFields = civicrm_api3($entity, 'getfields', array(
-      'api_action' => "getoptions",
-      'options' => array('get_options' => "all", 'get_options_context' => "match", 'params' => array()),
-      'params' => array(),
-    ))['values']['field']['options'];
+    try{
+      $opFields = civicrm_api3($entity, 'getfields', array(
+        'api_action' => "getoptions",
+        'options' => array('get_options' => "all", 'get_options_context' => "match", 'params' => array()),
+        'params' => array(),
+      ))['values']['field']['options'];
+    } catch (CiviCRM_API3_Exception $e) {
+      $error = $e->getMessage();
+      return array('error' => 'Validation Failed (getfields): '.$error);
+    }
     $opFields = array_keys($opFields);
     $valInfo = array();
     foreach ($params as $fieldName => $value) {
@@ -175,13 +186,17 @@ class CRM_Csvimport_Task_Import {
    * @param $field
    * @param $value
    * @return array
-   * @throws CiviCRM_API3_Exception
    */
   private static function validateField($entity, $field, $value) {
-    $options = civicrm_api3($entity, 'getoptions', array(
-      'field' => $field,
-      'context' => "match",
-    ))['values'];
+    try{
+      $options = civicrm_api3($entity, 'getoptions', array(
+        'field' => $field,
+        'context' => "match",
+      ))['values'];
+    } catch (CiviCRM_API3_Exception $e) {
+      $error = $e->getMessage();
+      return array('error' => 'Validation Failed (getoptions): '.$error);
+    }
     $value = explode('|', $value);
     $optionKeys = array_keys($options);
     $valueUpdated = FALSE;
@@ -219,13 +234,22 @@ class CRM_Csvimport_Task_Import {
    *
    * @param $filename
    * @param $errors
+   * @return boolean | array
    */
   private static function addErrorsToReport($filename, $errors) {
-    $file = fopen($filename, 'a');
-    foreach ($errors as $item) {
-      fputcsv($file, $item);
+    try {
+      $file = fopen($filename, 'a');
+      foreach ($errors as $item) {
+        fputcsv($file, $item);
+      }
+      fclose($file);
     }
-    fclose($file);
+    catch (Exception $e) {
+      $error = $e->getMessage();
+      return array('error' => $error);
+    }
+
+    return TRUE;
   }
 
 }
