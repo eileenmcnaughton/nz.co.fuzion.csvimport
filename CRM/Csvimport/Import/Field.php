@@ -60,6 +60,12 @@ class CRM_Csvimport_Import_Field {
   public $_dataPattern;
 
   /**
+   * ReferenceField object
+   * @var object
+   */
+  public $_refField;
+
+  /**
    * value of this field
    * @var object
    */
@@ -84,6 +90,14 @@ class CRM_Csvimport_Import_Field {
    */
   function setValue($value) {
     $this->_value = $value;
+  }
+
+  /**
+   * $value is an object of type ReferenceField
+   * @param $value
+   */
+  function setRefField($value) {
+    $this->_refField = $value;
   }
 
   /**

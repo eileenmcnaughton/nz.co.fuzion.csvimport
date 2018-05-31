@@ -39,6 +39,24 @@
 // non - b form ie. this is working as the base import class that doesn't seem to exist
 class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
+  public static $specialCaseFields = array(
+    'MembershipType' => array(
+      'membership_type_id' => 'name',
+    ),
+    'Address' => array(
+      'master_id' => array(
+        'contact_id',
+        'external_identifier', // special case; handled in import task
+      ),
+    ),
+    'County' => array(
+      'county_id' => 'name',
+    ),
+    'StateProvince' => array(
+      'state_province_id' => 'name',
+    ),
+  );
+
   /**
    * class constructor
    */
@@ -58,6 +76,79 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     // add all the actions
     $config = CRM_Core_Config::singleton();
     $this->addActions($config->uploadDir, array('uploadFile'));
+  }
+
+  /**
+   * Finds all reference fields for a given entity
+   *
+   * @param $entity
+   * @return array
+   */
+  function findAllReferenceFields($entity) {
+    $referenceFields = array();
+    $allEntities = civicrm_api3('Entity', 'get', array(
+      'sequential' => 1,
+    ))['values'];
+    if(!in_array($entity, $allEntities)) {
+      return $referenceFields;
+    }
+
+    // Get all fields for this entity type
+    $entityFields = civicrm_api3($entity, 'getfields', array(
+      'api_action' => "",
+    ));
+    if($entityFields['count'] > 0) {
+      foreach ($entityFields['values'] as $k => $val) {
+        //todo: Improve logic to find reference fields
+        if(isset($val['FKApiName'])) {
+          // this is a reference field
+          $referenceFields[$k]['label'] = $val['title'];
+          $referenceFields[$k]['name'] = $val['name'];
+          $referenceFields[$k]['entity'] = $val['FKApiName'];
+        }
+      }
+    }
+
+    // Get all custom fields for this entity of type, contactReference
+    $customFields = civicrm_api3('CustomField', 'get', array(
+      'sequential' => 1,
+      'custom_group_id.extends' => $entity,
+      'data_type' => "ContactReference",
+    ));
+    if($customFields['count'] > 0) {
+      $referenceFields['custom_fields'] = $customFields['values'];
+    }
+
+    return $referenceFields;
+  }
+
+  function getSpecialCaseFields($entity) {
+    if(isset(self::$specialCaseFields[$entity])) {
+      return self::$specialCaseFields[$entity];
+    }
+    return null;
+  }
+
+  /**
+   * Returns all unique fields of given entity
+   * (this is added to core as an api 'getuique' but not available in a stable release)
+   * @param $entity
+   * @return array
+   */
+  public static function findAllUniqueFields($entity) {
+    $uniqueFields = array();
+
+    $dao = _civicrm_api3_get_DAO($entity);
+    $uFields = $dao::indices();
+
+    foreach($uFields as $fieldKey => $field) {
+      if(!isset($field['unique']) || !$field['unique']) {
+        continue;
+      }
+      $uniqueFields[$fieldKey] = $field['field'];
+    }
+
+    return $uniqueFields;
   }
 }
 

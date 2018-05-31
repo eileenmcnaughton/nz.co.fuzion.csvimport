@@ -73,7 +73,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
    */
   public function preProcess() {
     $this->_mapperFields = $this->get('fields');
-    asort($this->_mapperFields);
     $this->_columnCount = $this->get('columnCount');
     $this->assign('columnCount', $this->_columnCount);
     $this->_dataValues = $this->get('dataValues');
@@ -92,6 +91,100 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
       $this->assign('rowDisplayCount', 2);
     }
     $this->doDuplicateOptionHandling();
+
+    // find all reference fields for this entity
+    $refFields = $this->controller->findAllReferenceFields($this->get('entity'));
+
+    // get all unique fields for above entities
+    $uniqueFields = array();
+    foreach ($refFields as $k => $rfield) {
+      // handle reference fields in custom fields (only contacts for now)
+      if($k == 'custom_fields') {
+        foreach ($rfield as $each) {
+          switch ($each['data_type']) {
+            case 'ContactReference':
+              try {
+                $uf = civicrm_api3('Contact', 'getunique', array())['values'];
+              }
+              catch (CiviCRM_API3_Exception $e) {
+                if($e->getErrorCode() == 'not-found') {
+                  // fallback method for versions < 5.2
+                  $uf = $this->controller->findAllUniqueFields('Contact');
+                }
+              }
+              $uniqueFields['Contact'][$each['name']] = $uf;
+              break;
+          }
+        }
+      } else {
+        try {
+          $uf = civicrm_api3($rfield['entity'], 'getunique', array())['values'];
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          if($e->getErrorCode() == 'not-found') {
+            // fallback method for versions < 5.2
+            $uf = $this->controller->findAllUniqueFields($rfield['entity']);
+          }
+        }
+        $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
+        $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
+        if($extraFields) {
+          foreach($extraFields as $k => $extraField) {
+            if(is_array($extraField)) {
+              foreach ($extraField as $each) {
+                $uniqueFields[$rfield['entity']][$k][] = array($each);
+              }
+            }
+            else {
+              $uniqueFields[$rfield['entity']][$k][] = array($extraField);
+            }
+          }
+        }
+      }
+    }
+
+    // Add new fields
+    $refFields = array();
+    foreach($uniqueFields as $entityName => $entity) {
+      foreach ($entity as $refKey => $entityRefFields) {
+        foreach ($entityRefFields as $indexCols) {
+          // skip if field name is 'id' as it would be available by default
+          if(count($indexCols) == 1 && $indexCols[0] == 'id') {
+            continue;
+          }
+
+          if(count($indexCols) == 1) {
+            $k = $indexCols[0];
+            if (isset($this->_mapperFields[$refKey])) {
+              $label = $this->_mapperFields[$refKey];
+              $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
+            } else {
+              $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
+            }
+            $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
+          }
+          else if(count($indexCols) > 1) {
+            // handle combination indexes
+            if($this->_mapperFields[$refKey]) {
+              $label = $this->_mapperFields[$refKey];
+            }
+            else {
+              $label = $refKey;
+            }
+            $indexKey = '';
+            foreach ($indexCols as $col) {
+              $indexKey .= '#'.$col;
+            }
+            foreach ($indexCols as $key => $col) {
+              $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
+              $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols)+array('active' => $col));
+            }
+          }
+        }
+      }
+    }
+    $this->controller->set('refFields', $refFields);
+    asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
   }
 
@@ -473,7 +566,13 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     //not sure we need this - trying to figure out how to pass the entity right through the multi-part form
     $this->set('_entity', $this->_entity);
 
+    //remove items that were not processed on previous import (maybe due to errors)
+    $queueClass = 'CRM_Queue_Queue_'.CRM_Csvimport_Queue_Import::QUEUE_TYPE;
+    $prevQueue = new $queueClass(array('name' => CRM_Csvimport_Queue_Import::QUEUE_NAME));
+    $prevQueue->deleteQueue();
+
     $parser = new $this->_parser($mapperKeysMain);
+    $parser->setRefFields($this->controller->get('refFields'));
     $parser->setEntity($this->_entity);
     $parser->run($fileName, $separator, $mapper, $skipColumnHeader,
       CRM_Import_Parser::MODE_PREVIEW, $this->get('contactType')

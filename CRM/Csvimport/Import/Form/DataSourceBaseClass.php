@@ -78,23 +78,14 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
-    // Setting Upload File Size.
     $config = CRM_Core_Config::singleton();
 
-    // This conditional block is important as the "maxImportFileSize" has been changed to "maxFileSize"
-    // in the newer versions. In order to remove version support, remove this block and 
-    // replace by $uploadFileSize = $config->maxFileSize.
-    if (!empty($config->maxImportFileSize)) {
-      $uploadFileSize = $config->maxImportFileSize;
-    }
-    else {
-      $uploadFileSize = CRM_Utils_Number::formatUnitSize($config->maxFileSize . 'm', TRUE);
-    }
+    $uploadFileSize = CRM_Utils_Number::formatUnitSize($config->maxFileSize . 'm', TRUE);
 
-    if ($uploadFileSize >= 8388608) {
-      $uploadFileSize = 8388608;
+    //Fetch uploadFileSize from php_ini when $config->maxFileSize is set to "no limit".
+    if (empty($uploadFileSize)) {
+      $uploadFileSize = CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), TRUE);
     }
-
     $uploadSize = round(($uploadFileSize / (1024 * 1024)), 2);
 
     $this->assign('uploadSize', $uploadSize);
@@ -151,6 +142,8 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
       )
     );
     $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), array('size' => 2));
+    $this->addElement('text', 'queueBatchSize', ts('Number Of Items To Process For Each Queue Item'), array('size' => 3));
+    $this->addElement('checkbox', 'allowEntityUpdate', ts('Allow Updating An Entity Using Unique Fields'));
     //build date formats
     CRM_Core_Form_Date::buildAllowedDateFormats($this);
 
@@ -185,12 +178,17 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $dateFormats      = $this->controller->exportValue($this->_name, 'dateFormats');
     $savedMapping     = $this->controller->exportValue($this->_name, 'savedMapping');
     $entity     = $this->controller->exportValue($this->_name, 'entity');
+    $queueBatchSize   = $this->controller->exportValue($this->_name, 'queueBatchSize');
+    $allowEntityUpdate = $this->controller->exportValue($this->_name, 'allowEntityUpdate');
 
     $this->set('onDuplicate', $onDuplicate);
     $this->set('contactType', $contactType);
     $this->set('dateFormats', $dateFormats);
     $this->set('savedMapping', $savedMapping);
     $this->set('_entity', $entity);
+
+    $this->controller->set('queueBatchSize', $queueBatchSize);
+    $this->controller->set('allowEntityUpdate', $allowEntityUpdate);
 
     $session = CRM_Core_Session::singleton();
     $session->set("dateTypes", $dateFormats);

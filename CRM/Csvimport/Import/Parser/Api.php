@@ -9,6 +9,9 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    * @var array
    */
   protected $_params = array();
+  protected $_refFields = array();
+  protected $_importQueueBatch = array();
+  protected $_allowEntityUpdate = FALSE;
 
   function setFields() {
    $fields = civicrm_api3($this->_entity, 'getfields', array('action' => 'create'));
@@ -24,6 +27,12 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
      if(CRM_Utils_Array::value('type', $values) == 12
      || CRM_Utils_Array::value('type', $values) == 4) {
        $this->_dateFields[] = $field;
+     }
+   }
+   foreach ($this->_refFields as $field => $values) {
+     if(isset($this->_fields[$values->id])) {
+       $this->_fields[$field] = $this->_fields[$values->id];
+       $this->_fields[$values->id]['_refField'] = $values->entity_field_name;
      }
    }
    $this->_fields = array_merge(array('do_not_import' => array('title' => ts('- do not import -'))), $this->_fields);
@@ -83,19 +92,16 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function import($onDuplicate, &$values) {
     $response = $this->summary($values);
-    $this->_params = $this->getActiveFieldParams();
+    $this->_params = $this->getActiveFieldParams(true);
     $this->formatDateParams();
     $this->_params['skipRecentView'] = TRUE;
     $this->_params['check_permissions'] = TRUE;
 
-    try{
-      civicrm_api3($this->_entity, 'create', $this->_params);
+    if(count($this->_importQueueBatch) >= $this->getImportQueueBatchSize()) {
+      $this->addBatchToQueue();
     }
-    catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      array_unshift($values, $error);
-      return CRM_Import_Parser::ERROR;
-    }
+    $this->addToBatch($this->_params, $values);
+
   }
 
   /**
@@ -122,4 +128,71 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
   function setEntity($entity) {
     $this->_entity = $entity;
   }
+
+  /**
+   * Set reference fields; array of ReferenceField objects
+   * @param string $entity
+   */
+  function setRefFields($val) {
+    $this->_refFields = $val;
+  }
+
+  /**
+   * Set batch size for import queue
+   * @param $size
+   */
+  function setImportQueueBatchSize($size) {
+    $this->_importQueueBatchSize = $size;
+  }
+
+  /**
+   * Get batch size for import queue
+   * @return int
+   */
+  function getImportQueueBatchSize() {
+    if($this->_importQueueBatchSize) {
+      return $this->_importQueueBatchSize;
+    }
+    return 1;
+  }
+
+  /**
+   * Add an item to current import batch
+   * @param $item
+   */
+  function addToBatch($item, $values) {
+    $item['rowValues'] = $values;
+    $item['allowUpdate'] = $this->_allowEntityUpdate;
+    $this->_importQueueBatch[] = $item;
+  }
+
+  /**
+   * Add all items in current batch to queue
+   */
+  function addBatchToQueue() {
+    if(count($this->_importQueueBatch) == 0) {
+      return;
+    }
+    $queueParams = array(
+      'entity' => $this->_entity,
+      'params' => $this->_importQueueBatch,
+      'errorFileName' => $this->_errorFileName,
+    );
+    $task = new CRM_Queue_Task(
+      array('CRM_Csvimport_Task_Import', 'ImportEntity'),
+      $queueParams,
+      ts('Importing entity') . ': ' . $this->_lineCount
+    );
+    $this->_importQueue->createItem($task);
+    $this->_importQueueBatch = array();
+  }
+
+  /**
+   * Set if entities can be updated using unique fields
+   * @param $size
+   */
+  function setAllowEntityUpdate($update) {
+    $this->_allowEntityUpdate = $update;
+  }
+
 }

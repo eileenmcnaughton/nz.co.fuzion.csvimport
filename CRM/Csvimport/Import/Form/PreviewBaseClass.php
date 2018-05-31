@@ -138,7 +138,13 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $parser = new $this->_parser($mapperKeys);
     $parser->setEntity($entity);
 
+    $parser->setRefFields($this->controller->get('refFields'));
     $mapFields = $this->get('fields');
+
+    $queueBatchSize = $this->controller->exportValue('DataSource', 'queueBatchSize');
+    $parser->setImportQueueBatchSize($this->controller->get('queueBatchSize'));
+
+    $parser->setAllowEntityUpdate($this->controller->get('allowEntityUpdate'));
 
     foreach ($mapper as $key => $value) {
       $header = array();
@@ -184,6 +190,25 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
       $urlParams = 'type=' . CRM_Import_Parser::NO_MATCH . $this->_importParserUrl;
       $this->set('downloadMismatchRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
     }
+    // run importer queue
+    $this->runQueue();
   }
+
+  /**
+   * Run all tasks in importer queue
+   */
+  private function runQueue() {
+    //retrieve the queue
+    $queue = CRM_Csvimport_Queue_Import::singleton()->getQueue();
+    $runner = new CRM_Queue_Runner(array(
+      'title' => ts('CSVImport Queue Runner - Import'), //title fo the queue
+      'queue' => $queue, //the queue object
+      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE, // continue on error
+      'onEndUrl' => CRM_Utils_System::url('civicrm/csvimporter/import', array('_qf_Summary_display' => true, 'qfKey' => $this->controller->_key), FALSE, NULL, FALSE), //go to page after all tasks are finished
+    ));
+
+    $runner->runAllViaWeb(); // does not return
+  }
+
 }
 

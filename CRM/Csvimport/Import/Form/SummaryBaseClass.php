@@ -59,12 +59,17 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
     $totalRowCount += $relatedCount;
     $this->set('totalRowCount', $totalRowCount);
 
-    $invalidRowCount = $this->get('invalidRowCount');
+    $invalidRowCount = $this->getInvalidRowCount();
     $conflictRowCount = $this->get('conflictRowCount');
     $duplicateRowCount = $this->get('duplicateRowCount');
     $onDuplicate = $this->get('onDuplicate');
     $mismatchCount = $this->get('unMatchCount');
-    if ($duplicateRowCount > 0) {
+    if($invalidRowCount > 0) {
+      $urlParams = 'type=' . CRM_Import_Parser::ERROR . $this->_importParserUrl;
+      $this->set('downloadErrorRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
+      $this->set('invalidRowCount', $invalidRowCount);
+    }
+    elseif ($duplicateRowCount > 0) {
       $urlParams = 'type=' . CRM_Import_Parser::DUPLICATE . $this->_importParserUrl;
       $this->set('downloadDuplicateRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
     }
@@ -104,6 +109,24 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
     foreach ($properties as $property) {
       $this->assign($property, $this->get($property));
     }
+  }
+
+  /**
+   * Returns error count from import queue error file
+   */
+  private function getInvalidRowCount() {
+    $file = CRM_Csvimport_Import_Parser::errorFileName(CRM_Csvimport_Import_Parser::ERROR);
+    $linecount = 0;
+    $handle = fopen($file, "r");
+    while(!feof($handle)){
+      $line = fgets($handle);
+      if($line != '') {
+        $linecount++;
+      }
+    }
+    fclose($handle);
+
+    return $linecount-1; // -1 for header
   }
 
 }
