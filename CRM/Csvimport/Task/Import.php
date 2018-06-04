@@ -27,9 +27,11 @@ class CRM_Csvimport_Task_Import {
       unset($params['rowValues']);
       $allowUpdate = $params['allowUpdate'];
       unset($params['allowUpdate']);
+      $ignoreCase = $params['ignoreCase'];
+      unset($params['ignoreCase']);
 
       // add validation for options select fields
-      $validation = self::validateFields($entity, $params);
+      $validation = self::validateFields($entity, $params, $ignoreCase);
       if(isset($validation['error'])) {
         array_unshift($origParams, $validation['error']);
         $error = $origParams;
@@ -157,7 +159,7 @@ class CRM_Csvimport_Task_Import {
    * @param $params
    * @return array
    */
-  private static function validateFields($entity, $params) {
+  private static function validateFields($entity, $params, $ignoreCase = FALSE) {
     try{
       $opFields = civicrm_api3($entity, 'getfields', array(
         'api_action' => "getoptions",
@@ -180,7 +182,7 @@ class CRM_Csvimport_Task_Import {
         continue;
       }
       if(in_array($fieldName, $opFields)) {
-        $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value);
+        $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value, $ignoreCase);
       }
     }
 
@@ -195,7 +197,7 @@ class CRM_Csvimport_Task_Import {
    * @param $value
    * @return array
    */
-  private static function validateField($entity, $field, $value) {
+  private static function validateField($entity, $field, $value, $ignoreCase = FALSE) {
     // Horrible hack to get around
     // https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/issues/21
     if ($entity == 'Relationship' && $field == 'relationship_type_id') {
@@ -211,8 +213,13 @@ class CRM_Csvimport_Task_Import {
       $error = $e->getMessage();
       return array('error' => 'Validation Failed (getoptions): '.$error);
     }
-    $value = explode('|', $value);
+
     $optionKeys = array_keys($options);
+    if($ignoreCase) {
+      $optionKeys = array_map('strtolower', $optionKeys);
+      $value = strtolower($value);
+    }
+    $value = explode('|', $value);
     $valueUpdated = FALSE;
     $isValid = TRUE;
 

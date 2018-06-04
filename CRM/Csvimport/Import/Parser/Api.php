@@ -12,6 +12,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
   protected $_refFields = array();
   protected $_importQueueBatch = array();
   protected $_allowEntityUpdate = FALSE;
+  protected $_ignoreCase = FALSE;
 
   function setFields() {
    $fields = civicrm_api3($this->_entity, 'getfields', array('action' => 'create'));
@@ -163,6 +164,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
   function addToBatch($item, $values) {
     $item['rowValues'] = $values;
     $item['allowUpdate'] = $this->_allowEntityUpdate;
+    $item['ignoreCase'] = $this->_ignoreCase;
     $this->_importQueueBatch[] = $item;
   }
 
@@ -193,6 +195,14 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
    */
   function setAllowEntityUpdate($update) {
     $this->_allowEntityUpdate = $update;
+  }
+
+  /**
+   * Set if letter-case needs to be ignored for field option values
+   * @param $size
+   */
+  function setIgnoreCase($ignoreCase) {
+    $this->_ignoreCase = $ignoreCase;
   }
 
 }

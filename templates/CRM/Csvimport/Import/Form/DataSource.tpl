@@ -85,6 +85,14 @@
           </span>
         </td>
       </tr>
+      <tr class="crm-import-datasource-form-block-ignoreCase">
+        <td class="label">{$form.ignoreCase.label}</td>
+        <td>{$form.ignoreCase.html} <br/>
+          <span class="description">
+            {ts}Ignore letter-case when mapping values to option fields (Eg. Individual Prefix). Note that this may produce unexpected results if you have multiple option names with same name like Ms. and ms.{/ts}
+          </span>
+        </td>
+      </tr>
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>
