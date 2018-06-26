@@ -220,7 +220,7 @@ class CRM_Csvimport_Task_Import {
       $value = strtolower($value);
     }
     $value = explode('|', $value);
-    $value = array_filter($value); // filter empty values
+    $value = array_values(array_filter($value)); // filter empty values
     $valueUpdated = FALSE;
     $isValid = TRUE;
 
