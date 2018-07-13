@@ -182,6 +182,11 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
     $queueBatchSize   = $this->controller->exportValue($this->_name, 'queueBatchSize');
     $allowEntityUpdate = $this->controller->exportValue($this->_name, 'allowEntityUpdate');
     $ignoreCase = $this->controller->exportValue($this->_name, 'ignoreCase');
+    $noteEntity = NULL;
+    if ($entity == 'Note') {
+      $noteEntity = $this->controller->exportValue($this->_name, 'noteEntity');
+      $this->set('noteEntity', $noteEntity);
+    }
 
     $this->set('onDuplicate', $onDuplicate);
     $this->set('contactType', $contactType);

@@ -43,11 +43,11 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
   protected $_entity;
   /**
-  * Include duplicate options
-  */
+   * Include duplicate options
+   */
   protected $isDuplicateOptions = FALSE;
 
-    /**
+  /**
    * Function to actually build the form - this appears to be entirely code that should be in a shared base class in core
    *
    * @return None
@@ -71,6 +71,16 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
       }
     }
     $this->add('select', 'entity', ts('Entity To Import'), array('' => ts('- select -')) + $creatableEntities);
+
+    // handle 'Note' entity
+    $entities = CRM_Core_BAO_Note::entityTables();
+    $noteEntities = array();
+    foreach ($entities as $key => $entity) {
+      $noteEntities[$entity] = $entity;
+    }
+    asort($noteEntities);
+    $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + array('0' => ts('Set this in CSV')));
+
     parent::buildQuickForm();
   }
 
