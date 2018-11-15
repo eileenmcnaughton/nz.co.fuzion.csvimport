@@ -171,6 +171,10 @@ class CRM_Csvimport_Task_Import {
     $opFields = array_keys($opFields);
     $valInfo = array();
     foreach ($params as $fieldName => $value) {
+      // exception with relation_type_id which is numeric, and doesn't pass the validation
+      if ($entity == 'Relationship' && $fieldName == 'relationship_type_id') {
+        continue;
+      }
       if(in_array($fieldName, $opFields)) {
         $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value);
       }
