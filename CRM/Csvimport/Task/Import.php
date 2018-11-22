@@ -175,6 +175,10 @@ class CRM_Csvimport_Task_Import {
       if ($entity == 'Relationship' && $fieldName == 'relationship_type_id') {
         continue;
       }
+      // exception with group_id which is numeric, and doesn't pass the validation
+      if ($entity == 'GroupContact' && $fieldName == 'group_id') {
+        continue;
+      }
       if(in_array($fieldName, $opFields)) {
         $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value);
       }
