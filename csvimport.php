@@ -1,6 +1,7 @@
 <?php
 
 require_once 'csvimport.civix.php';
+use CRM_Csvimport_ExtensionUtil as E;
 
 /**
  * Implementation of hook_civicrm_config
@@ -22,28 +23,28 @@ function csvimport_civicrm_xmlMenu(&$files) {
  * Implementation of hook_civicrm_install
  */
 function csvimport_civicrm_install() {
-  return _csvimport_civix_civicrm_install();
+  _csvimport_civix_civicrm_install();
 }
 
 /**
  * Implementation of hook_civicrm_uninstall
  */
 function csvimport_civicrm_uninstall() {
-  return _csvimport_civix_civicrm_uninstall();
+  _csvimport_civix_civicrm_uninstall();
 }
 
 /**
  * Implementation of hook_civicrm_enable
  */
 function csvimport_civicrm_enable() {
-  return _csvimport_civix_civicrm_enable();
+  _csvimport_civix_civicrm_enable();
 }
 
 /**
  * Implementation of hook_civicrm_disable
  */
 function csvimport_civicrm_disable() {
-  return _csvimport_civix_civicrm_disable();
+  _csvimport_civix_civicrm_disable();
 }
 
 /**
@@ -66,33 +67,24 @@ function csvimport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * is installed, disabled, uninstalled.
  */
 function csvimport_civicrm_managed(&$entities) {
-  return _csvimport_civix_civicrm_managed($entities);
+  _csvimport_civix_civicrm_managed($entities);
 }
 
 /**
  * Implementation of hook_civicrm_navigationMenu
  *
  * Adds entries to the navigation menu
- * @param unknown $menu
+ * @param array $menu
  */
 function csvimport_civicrm_navigationMenu(&$menu) {
-  $maxID = CRM_Core_DAO::singleValueQuery("SELECT max(id) FROM civicrm_navigation");
-  $administerMenuId = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_Navigation', 'Administer', 'id', 'name');
-  if (!$administerMenuId) {
-    return;
-  }
-  $navId = $maxID + 1;
-  $menu[$navId] = array (
-    'attributes' => array (
-      'label' => 'API csv Import',
-      'name' => 'CSV to api bridge',
-      'url' => 'civicrm/csvimporter/import',
-      'permission' => 'administer CiviCRM',
-      'operator' => null,
-      'separator' => null,
-      'parentID' => $administerMenuId,
-      'active' => 1,
-      'navID' => $navId,
-    )
+  $item[] =  array (
+    'label' => E::ts('API csv Import'),
+    'name'       => 'CSV to api bridge',
+    'url' => 'civicrm/csvimporter/import',
+    'permission' => 'administer CiviCRM',
+    'operator'   => NULL,
+    'separator'  => NULL,
   );
+  _csvimport_civix_insert_navigation_menu($menu, 'Administer', $item[0]);
+  _csvimport_civix_navigationMenu($menu);
 }
