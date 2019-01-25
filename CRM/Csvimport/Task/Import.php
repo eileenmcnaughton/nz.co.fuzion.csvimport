@@ -196,6 +196,12 @@ class CRM_Csvimport_Task_Import {
    * @return array
    */
   private static function validateField($entity, $field, $value) {
+    // Horrible hack to get around
+    // https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/issues/21
+    if ($entity == 'Relationship' && $field == 'relationship_type_id') {
+      return array('error' => 0);
+    }
+
     try{
       $options = civicrm_api3($entity, 'getoptions', array(
         'field' => $field,
