@@ -2,16 +2,61 @@
 
 class CRM_Csvimport_Task_Import {
 
+  private static $entityFieldsMeta = array();
+  private static $entityFieldOptionsMeta = array();
+
+  /**
+   * Returns fields metadata ('getfields') of given entity
+   *
+   * @param $entity
+   * @return mixed
+   */
+  private static function getFieldsMeta($entity) {
+    if(!isset(self::$entityFieldsMeta[$entity])) {
+      try{
+        self::$entityFieldsMeta[$entity] = array();
+        self::$entityFieldsMeta[$entity] = civicrm_api3($entity, 'getfields', array(
+          'api_action' => "getfields",
+        ))['values'];
+      } catch (CiviCRM_API3_Exception $e) {
+        // nothing
+      }
+    }
+    return self::$entityFieldsMeta[$entity];
+  }
+
+  /**
+   * Returns 'getoptions' values for given entity and field
+   *
+   * @param $entity
+   * @param $field
+   * @return mixed
+   */
+  private static function getFieldOptionsMeta($entity, $field) {
+    if(!isset(self::$entityFieldOptionsMeta[$entity])) {
+      try{
+        self::$entityFieldOptionsMeta[$entity] = array();
+        self::$entityFieldOptionsMeta[$entity] = civicrm_api3($entity, 'getoptions', array(
+          'field' => $field,
+          'context' => "match",
+        ))['values'];
+      } catch (CiviCRM_API3_Exception $e) {
+        // nothing
+      }
+    }
+    return self::$entityFieldOptionsMeta[$entity];
+  }
+
   /**
    * Callback function for entity import task
    *
    * @param CRM_Queue_TaskContext $ctx
    * @param $entity
    * @param $batch
+   * @param $errFileName
    * @return bool
    */
   public static function ImportEntity(CRM_Queue_TaskContext $ctx, $entity, $batch, $errFileName) {
-
     if( !$entity || !isset($batch)) {
       CRM_Core_Session::setStatus('Invalid params supplied to import queue!', 'Queue task - Init', 'error');
       return false;
@@ -27,9 +72,11 @@ class CRM_Csvimport_Task_Import {
       unset($params['rowValues']);
       $allowUpdate = $params['allowUpdate'];
       unset($params['allowUpdate']);
+      $ignoreCase = $params['ignoreCase'];
+      unset($params['ignoreCase']);
 
       // add validation for options select fields
-      $validation = self::validateFields($entity, $params);
+      $validation = self::validateFields($entity, $params, $ignoreCase);
       if(isset($validation['error'])) {
         array_unshift($origParams, $validation['error']);
         $error = $origParams;
@@ -154,33 +201,26 @@ class CRM_Csvimport_Task_Import {
   /**
    * Validates field-value pairs before importing
    *
+   * @param $entity
    * @param $params
+   * @param bool $ignoreCase
    * @return array
    */
-  private static function validateFields($entity, $params) {
-    try{
-      $opFields = civicrm_api3($entity, 'getfields', array(
-        'api_action' => "getoptions",
-        'options' => array('get_options' => "all", 'get_options_context' => "match", 'params' => array()),
-        'params' => array(),
-      ))['values']['field']['options'];
-    } catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      return array('error' => 'Validation Failed (getfields): '.$error);
+  private static function validateFields($entity, $params, $ignoreCase = FALSE) {
+    $fieldsMeta = self::getFieldsMeta($entity);
+
+    $opFields = array();
+    foreach ($fieldsMeta as $fieldName => $value) {
+      // only try to validate option fields and yes/no fields
+      if($value['type'] == CRM_Utils_Type::T_BOOLEAN || isset($value['pseudoconstant'])) {
+        $opFields[] = $fieldName;
+      }
     }
-    $opFields = array_keys($opFields);
+
     $valInfo = array();
     foreach ($params as $fieldName => $value) {
-      // exception with relation_type_id which is numeric, and doesn't pass the validation
-      if ($entity == 'Relationship' && $fieldName == 'relationship_type_id') {
-        continue;
-      }
-      // exception with group_id which is numeric, and doesn't pass the validation
-      if ($entity == 'GroupContact' && $fieldName == 'group_id') {
-        continue;
-      }
       if(in_array($fieldName, $opFields)) {
-        $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value);
+        $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value, $ignoreCase);
       }
     }
 
@@ -191,28 +231,22 @@ class CRM_Csvimport_Task_Import {
    * Validates given option/value field against allowed values
    * Also handles multi valued fields separated by '|'
    *
+   * @param $entity
    * @param $field
    * @param $value
+   * @param bool $ignoreCase
    * @return array
    */
-  private static function validateField($entity, $field, $value) {
-    // Horrible hack to get around
-    // https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/issues/21
-    if ($entity == 'Relationship' && $field == 'relationship_type_id') {
-      return array('error' => 0);
-    }
+  private static function validateField($entity, $field, $value, $ignoreCase = FALSE) {
+    $options = self::getFieldOptionsMeta($entity, $field);
 
-    try{
-      $options = civicrm_api3($entity, 'getoptions', array(
-        'field' => $field,
-        'context' => "match",
-      ))['values'];
-    } catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      return array('error' => 'Validation Failed (getoptions): '.$error);
+    $optionKeys = array_keys($options);
+    if($ignoreCase) {
+      $optionKeys = array_map('strtolower', $optionKeys);
+      $value = strtolower($value);
     }
     $value = explode('|', $value);
-    $optionKeys = array_keys($options);
+    $value = array_values(array_filter($value)); // filter empty values
     $valueUpdated = FALSE;
     $isValid = TRUE;
 
@@ -221,7 +255,7 @@ class CRM_Csvimport_Task_Import {
         $isValid = FALSE;
         // check 'label' if 'name' not found
         foreach ($options as $name => $label) {
-          if($mval == $label) {
+          if($mval == $label || ($ignoreCase && strcasecmp($mval, $label) == 0)) {
             $value[$k] = $name;
             $valueUpdated = TRUE;
             $isValid = TRUE;

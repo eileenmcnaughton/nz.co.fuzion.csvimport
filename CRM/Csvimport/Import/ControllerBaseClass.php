@@ -82,14 +82,15 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
    * Finds all reference fields for a given entity
    *
    * @param $entity
+   * @param $params
    * @return array
    */
-  function findAllReferenceFields($entity) {
+  function findAllReferenceFields($entity, $params = NULL) {
     $referenceFields = array();
     $allEntities = civicrm_api3('Entity', 'get', array(
       'sequential' => 1,
     ))['values'];
-    if(!in_array($entity, $allEntities)) {
+    if (!in_array($entity, $allEntities)) {
       return $referenceFields;
     }
 
@@ -97,14 +98,21 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
     $entityFields = civicrm_api3($entity, 'getfields', array(
       'api_action' => "",
     ));
-    if($entityFields['count'] > 0) {
+    if ($entityFields['count'] > 0) {
       foreach ($entityFields['values'] as $k => $val) {
         //todo: Improve logic to find reference fields
-        if(isset($val['FKApiName'])) {
+        if (isset($val['FKApiName']) && $entity != 'Note') {
           // this is a reference field
           $referenceFields[$k]['label'] = $val['title'];
           $referenceFields[$k]['name'] = $val['name'];
           $referenceFields[$k]['entity'] = $val['FKApiName'];
+        }
+        // spl handling for 'Note' as it can reference multiple entity types
+        else if ($entity == 'Note' && $val['name'] == 'entity_id' && isset($params[$entity])) {
+          // this is a reference field
+          $referenceFields[$k]['label'] = $val['title'];
+          $referenceFields[$k]['name'] = $val['name'];
+          $referenceFields[$k]['entity'] = $params[$entity];
         }
       }
     }
@@ -115,7 +123,7 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
       'custom_group_id.extends' => $entity,
       'data_type' => "ContactReference",
     ));
-    if($customFields['count'] > 0) {
+    if ($customFields['count'] > 0) {
       $referenceFields['custom_fields'] = $customFields['values'];
     }
 

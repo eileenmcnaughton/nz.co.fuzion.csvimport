@@ -93,7 +93,12 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $this->doDuplicateOptionHandling();
 
     // find all reference fields for this entity
-    $refFields = $this->controller->findAllReferenceFields($this->get('entity'));
+    $params = array();
+    if ($noteEntity = $this->get('noteEntity')) {
+      $params[$this->get('entity')] = $noteEntity;
+      unset($this->_mapperFields['entity_table']);
+    }
+    $refFields = $this->controller->findAllReferenceFields($this->get('entity'), $params);
 
     // get all unique fields for above entities
     $uniqueFields = array();

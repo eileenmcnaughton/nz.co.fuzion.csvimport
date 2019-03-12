@@ -41,6 +41,16 @@
         <td class="label">{$form.entity.label}</td>
         <td>{$form.entity.html}</td>
       </tr>
+      <tr class="crm-api-import-noteEntity-form-block-entity" id="noteEntityWrapper">
+        <td class="label">{$form.noteEntity.label}</td>
+        <td>{$form.noteEntity.html}<br/>
+          <span class="description">
+            {ts}Choose 'Set this in CSV' to use 'entity_table' field in next step. This allows you to import 'Notes' to multiple entities in same import.{/ts}
+            <br/>
+            {ts}Selecting an entity here will allow unique fields of this entity to be used in place of 'id'. Eg: External id for 'Contact'. (note: this will hide 'entity_table' field in next step){/ts}
+          </span>
+        </td>
+      </tr>
       <tr class="crm-api-import-uploadfile-form-block-uploadFile">
         <td class="label">{$form.uploadFile.label}</td>
         <td>{$form.uploadFile.html}<br/>
@@ -85,6 +95,14 @@
           </span>
         </td>
       </tr>
+      <tr class="crm-import-datasource-form-block-ignoreCase">
+        <td class="label">{$form.ignoreCase.label}</td>
+        <td>{$form.ignoreCase.html} <br/>
+          <span class="description">
+            {ts}Ignore letter-case when mapping values to option fields (Eg. Individual Prefix). Note that this may produce unexpected results if you have multiple option names with same name like Ms. and ms.{/ts}
+          </span>
+        </td>
+      </tr>
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>
@@ -104,3 +122,20 @@
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
   </div>
 </div>
+{literal}
+  <script type="text/javascript" >
+    CRM.$('select#entity').on('change', function() {
+      if (CRM.$(this).val() == 'Note') {
+        CRM.$('#noteEntityWrapper').show();
+      } else {
+        CRM.$('#noteEntityWrapper').hide();
+      }
+    });
+    if (CRM.$('select#entity option:selected').val() == 'Note') {
+      CRM.$('#noteEntityWrapper').show();
+    }
+    else {
+      CRM.$('#noteEntityWrapper').hide();
+    }
+  </script>
+{/literal}
