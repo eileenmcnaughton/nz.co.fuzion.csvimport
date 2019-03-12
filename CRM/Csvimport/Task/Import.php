@@ -219,14 +219,6 @@ class CRM_Csvimport_Task_Import {
 
     $valInfo = array();
     foreach ($params as $fieldName => $value) {
-      // exception with relation_type_id which is numeric, and doesn't pass the validation
-      if ($entity == 'Relationship' && $fieldName == 'relationship_type_id') {
-        continue;
-      }
-      // exception with group_id which is numeric, and doesn't pass the validation
-      if ($entity == 'GroupContact' && $fieldName == 'group_id') {
-        continue;
-      }
       if(in_array($fieldName, $opFields)) {
         $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value, $ignoreCase);
       }
@@ -246,12 +238,6 @@ class CRM_Csvimport_Task_Import {
    * @return array
    */
   private static function validateField($entity, $field, $value, $ignoreCase = FALSE) {
-    // Horrible hack to get around
-    // https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/issues/21
-    if ($entity == 'Relationship' && $field == 'relationship_type_id') {
-      return array('error' => 0);
-    }
-
     $options = self::getFieldOptionsMeta($entity, $field);
 
     $optionKeys = array_keys($options);
