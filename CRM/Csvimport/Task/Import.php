@@ -12,7 +12,7 @@ class CRM_Csvimport_Task_Import {
    * @return mixed
    */
   private static function getFieldsMeta($entity) {
-    if(!isset(self::$entityFieldsMeta[$entity])) {
+    if (!isset(self::$entityFieldsMeta[$entity])) {
       try{
         self::$entityFieldsMeta[$entity] = array();
         self::$entityFieldsMeta[$entity] = civicrm_api3($entity, 'getfields', array(
@@ -33,10 +33,10 @@ class CRM_Csvimport_Task_Import {
    * @return mixed
    */
   private static function getFieldOptionsMeta($entity, $field) {
-    if(!isset(self::$entityFieldOptionsMeta[$entity])) {
+    if (!isset(self::$entityFieldOptionsMeta[$entity][$field])) {
       try{
-        self::$entityFieldOptionsMeta[$entity] = array();
-        self::$entityFieldOptionsMeta[$entity] = civicrm_api3($entity, 'getoptions', array(
+        self::$entityFieldOptionsMeta[$entity][$field] = array();
+        self::$entityFieldOptionsMeta[$entity][$field] = civicrm_api3($entity, 'getoptions', array(
           'field' => $field,
           'context' => "match",
         ))['values'];
@@ -44,7 +44,7 @@ class CRM_Csvimport_Task_Import {
         // nothing
       }
     }
-    return self::$entityFieldOptionsMeta[$entity];
+    return self::$entityFieldOptionsMeta[$entity][$field];
   }
 
   /**
@@ -57,7 +57,7 @@ class CRM_Csvimport_Task_Import {
    * @return bool
    */
   public static function ImportEntity(CRM_Queue_TaskContext $ctx, $entity, $batch, $errFileName) {
-    if( !$entity || !isset($batch)) {
+    if (!$entity || !isset($batch)) {
       CRM_Core_Session::setStatus('Invalid params supplied to import queue!', 'Queue task - Init', 'error');
       return false;
     }
@@ -77,7 +77,7 @@ class CRM_Csvimport_Task_Import {
 
       // add validation for options select fields
       $validation = self::validateFields($entity, $params, $ignoreCase);
-      if(isset($validation['error'])) {
+      if (isset($validation['error'])) {
         array_unshift($origParams, $validation['error']);
         $error = $origParams;
         $validation = array();
@@ -95,7 +95,7 @@ class CRM_Csvimport_Task_Import {
       }
 
       // validation errors
-      if($error) {
+      if ($error) {
         $errors[] = $error;
         continue;
       }
@@ -138,13 +138,13 @@ class CRM_Csvimport_Task_Import {
       }
 
       // api chaining errors
-      if($error) {
+      if ($error) {
         $errors[] = $error;
         continue;
       }
 
       // Check if entity needs to be updated/created
-      if($allowUpdate) {
+      if ($allowUpdate) {
         $uniqueFields = CRM_Csvimport_Import_ControllerBaseClass::findAllUniqueFields($entity);
         foreach ($uniqueFields as $uniqueField) {
           $fieldCount = 0;
@@ -189,7 +189,7 @@ class CRM_Csvimport_Task_Import {
       }
     }
 
-    if(count($errors) > 0) {
+    if (count($errors) > 0) {
       $ret = self::addErrorsToReport($errFileName, $errors);
       if(isset($ret['error'])) {
         CRM_Core_Session::setStatus($ret['error'], 'Queue task', 'error');
@@ -241,7 +241,7 @@ class CRM_Csvimport_Task_Import {
     $options = self::getFieldOptionsMeta($entity, $field);
 
     $optionKeys = array_keys($options);
-    if($ignoreCase) {
+    if ($ignoreCase) {
       $optionKeys = array_map('strtolower', $optionKeys);
       $value = strtolower($value);
     }
@@ -251,24 +251,24 @@ class CRM_Csvimport_Task_Import {
     $isValid = TRUE;
 
     foreach ($value as $k => $mval) {
-      if(!empty($mval) && !in_array($mval, $optionKeys)) {
+      if (!empty($mval) && !in_array($mval, $optionKeys)) {
         $isValid = FALSE;
         // check 'label' if 'name' not found
         foreach ($options as $name => $label) {
-          if($mval == $label || ($ignoreCase && strcasecmp($mval, $label) == 0)) {
+          if ($mval == $label || ($ignoreCase && strcasecmp($mval, $label) == 0)) {
             $value[$k] = $name;
             $valueUpdated = TRUE;
             $isValid = TRUE;
           }
         }
-        if(!$isValid) {
+        if (!$isValid) {
           return array('error' => ts('Invalid value for field') . ' (' . $field . ') => ' . $mval);
         }
       }
     }
 
-    if(count($value) == 1) {
-      if(!$valueUpdated) {
+    if (count($value) == 1) {
+      if (!$valueUpdated) {
         return array('error' => 0);
       }
       $value = array_pop($value);
