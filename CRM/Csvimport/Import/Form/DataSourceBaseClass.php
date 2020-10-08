@@ -96,7 +96,7 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
 
     $this->assign('uploadSize', $uploadSize);
 
-    $this->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=255', TRUE);
+    $this->add('file', 'uploadFile', ts('Import Data File'), ['size' => 30, 'maxlength' => 255], TRUE);
 
     $this->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
     $this->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', [1 => $uploadSize, 2 => $uploadFileSize]), 'maxfilesize', $uploadFileSize);
