@@ -2,23 +2,26 @@
 
 class CRM_Csvimport_Task_Import {
 
-  private static $entityFieldsMeta = array();
-  private static $entityFieldOptionsMeta = array();
+  private static $entityFieldsMeta = [];
+
+  private static $entityFieldOptionsMeta = [];
 
   /**
    * Returns fields metadata ('getfields') of given entity
    *
    * @param $entity
+   *
    * @return mixed
    */
   private static function getFieldsMeta($entity) {
     if (!isset(self::$entityFieldsMeta[$entity])) {
-      try{
-        self::$entityFieldsMeta[$entity] = array();
-        self::$entityFieldsMeta[$entity] = civicrm_api3($entity, 'getfields', array(
+      try {
+        self::$entityFieldsMeta[$entity] = [];
+        self::$entityFieldsMeta[$entity] = civicrm_api3($entity, 'getfields', [
           'api_action' => "getfields",
-        ))['values'];
-      } catch (CiviCRM_API3_Exception $e) {
+        ])['values'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
         // nothing
       }
     }
@@ -30,17 +33,19 @@ class CRM_Csvimport_Task_Import {
    *
    * @param $entity
    * @param $field
+   *
    * @return mixed
    */
   private static function getFieldOptionsMeta($entity, $field) {
     if (!isset(self::$entityFieldOptionsMeta[$entity][$field])) {
-      try{
-        self::$entityFieldOptionsMeta[$entity][$field] = array();
-        self::$entityFieldOptionsMeta[$entity][$field] = civicrm_api3($entity, 'getoptions', array(
+      try {
+        self::$entityFieldOptionsMeta[$entity][$field] = [];
+        self::$entityFieldOptionsMeta[$entity][$field] = civicrm_api3($entity, 'getoptions', [
           'field' => $field,
           'context' => "match",
-        ))['values'];
-      } catch (CiviCRM_API3_Exception $e) {
+        ])['values'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
         // nothing
       }
     }
@@ -54,15 +59,16 @@ class CRM_Csvimport_Task_Import {
    * @param $entity
    * @param $batch
    * @param $errFileName
+   *
    * @return bool
    */
   public static function ImportEntity(CRM_Queue_TaskContext $ctx, $entity, $batch, $errFileName) {
     if (!$entity || !isset($batch)) {
       CRM_Core_Session::setStatus('Invalid params supplied to import queue!', 'Queue task - Init', 'error');
-      return false;
+      return FALSE;
     }
 
-    $errors = array();
+    $errors = [];
     $error = NULL;
 
     // process items from batch
@@ -80,7 +86,7 @@ class CRM_Csvimport_Task_Import {
       if (isset($validation['error'])) {
         array_unshift($origParams, $validation['error']);
         $error = $origParams;
-        $validation = array();
+        $validation = [];
       }
       foreach ($validation as $fieldName => $valInfo) {
         if ($valInfo['error']) {
@@ -112,7 +118,8 @@ class CRM_Csvimport_Task_Import {
             if ($refEntity == 'Address' && isset($param[$key]['external_identifier'])) {
               try {
                 $res = civicrm_api3('Contact', 'get', $param[$key]);
-              } catch (CiviCRM_API3_Exception $e) {
+              }
+              catch (CiviCRM_API3_Exception $e) {
                 $error = $e->getMessage();
                 $m = 'Error handling \'Master Address Belongs To\'! (' . $error . ')';
                 array_unshift($origParams, $m);
@@ -125,7 +132,8 @@ class CRM_Csvimport_Task_Import {
 
             try {
               $data = civicrm_api3($refEntity, 'get', $param[$key]);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               $error = $e->getMessage();
               $m = 'Error with referenced entity "get"! (' . $error . ')';
               array_unshift($origParams, $m);
@@ -148,7 +156,7 @@ class CRM_Csvimport_Task_Import {
         $uniqueFields = CRM_Csvimport_Import_ControllerBaseClass::findAllUniqueFields($entity);
         foreach ($uniqueFields as $uniqueField) {
           $fieldCount = 0;
-          $tmp = array();
+          $tmp = [];
 
           foreach ($uniqueField as $name) {
             if (isset($params[$name])) {
@@ -161,9 +169,10 @@ class CRM_Csvimport_Task_Import {
             // unique field found; check if it entity exists
             try {
               $tmp['sequential'] = 1;
-              $tmp['return'] = array('id');
+              $tmp['return'] = ['id'];
               $existingEntity = civicrm_api3($entity, 'get', $tmp);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               $error = $e->getMessage();
               $m = 'Error with entity "get"! (' . $error . ')';
               array_unshift($origParams, $m);
@@ -180,7 +189,8 @@ class CRM_Csvimport_Task_Import {
 
       try {
         civicrm_api3($entity, 'create', $params);
-      } catch (CiviCRM_API3_Exception $e) {
+      }
+      catch (CiviCRM_API3_Exception $e) {
         $error = $e->getMessage();
         $m = 'Error with entity "create"! (' . $error . ')';
         array_unshift($origParams, $m);
@@ -191,11 +201,11 @@ class CRM_Csvimport_Task_Import {
 
     if (count($errors) > 0) {
       $ret = self::addErrorsToReport($errFileName, $errors);
-      if(isset($ret['error'])) {
+      if (isset($ret['error'])) {
         CRM_Core_Session::setStatus($ret['error'], 'Queue task', 'error');
       }
     }
-    return true;
+    return TRUE;
   }
 
   /**
@@ -204,22 +214,23 @@ class CRM_Csvimport_Task_Import {
    * @param $entity
    * @param $params
    * @param bool $ignoreCase
+   *
    * @return array
    */
   private static function validateFields($entity, $params, $ignoreCase = FALSE) {
     $fieldsMeta = self::getFieldsMeta($entity);
 
-    $opFields = array();
+    $opFields = [];
     foreach ($fieldsMeta as $fieldName => $value) {
       // only try to validate option fields and yes/no fields
-      if($value['type'] == CRM_Utils_Type::T_BOOLEAN || isset($value['pseudoconstant'])) {
+      if ($value['type'] == CRM_Utils_Type::T_BOOLEAN || isset($value['pseudoconstant'])) {
         $opFields[] = $fieldName;
       }
     }
 
-    $valInfo = array();
+    $valInfo = [];
     foreach ($params as $fieldName => $value) {
-      if(in_array($fieldName, $opFields)) {
+      if (in_array($fieldName, $opFields)) {
         $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value, $ignoreCase);
       }
     }
@@ -235,6 +246,7 @@ class CRM_Csvimport_Task_Import {
    * @param $field
    * @param $value
    * @param bool $ignoreCase
+   *
    * @return array
    */
   private static function validateField($entity, $field, $value, $ignoreCase = FALSE) {
@@ -262,19 +274,19 @@ class CRM_Csvimport_Task_Import {
           }
         }
         if (!$isValid) {
-          return array('error' => ts('Invalid value for field') . ' (' . $field . ') => ' . $mval);
+          return ['error' => ts('Invalid value for field') . ' (' . $field . ') => ' . $mval];
         }
       }
     }
 
     if (count($value) == 1) {
       if (!$valueUpdated) {
-        return array('error' => 0);
+        return ['error' => 0];
       }
       $value = array_pop($value);
     }
 
-    return array('error' => 0, 'valueUpdated' => array('field' => $field, 'value' => $value));
+    return ['error' => 0, 'valueUpdated' => ['field' => $field, 'value' => $value]];
   }
 
   /**
@@ -282,6 +294,7 @@ class CRM_Csvimport_Task_Import {
    *
    * @param $filename
    * @param $errors
+   *
    * @return boolean | array
    */
   private static function addErrorsToReport($filename, $errors) {
@@ -294,7 +307,7 @@ class CRM_Csvimport_Task_Import {
     }
     catch (Exception $e) {
       $error = $e->getMessage();
-      return array('error' => $error);
+      return ['error' => $error];
     }
 
     return TRUE;

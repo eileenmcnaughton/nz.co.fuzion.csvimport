@@ -37,13 +37,16 @@
  * This class summarizes the import results
  */
 class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary {
+
   /**
    * This is used in error urls
    * although this code specifies the Event import parser it is a completely generic function that could live anywhere (& probably does in C&P
    * manifestations
+   *
    * @var unknown
    */
   protected $_importParserUrl = '&parser=CRM_Event_Import_Parser';
+
   /**
    * Function to set variables up before form is built
    *
@@ -64,7 +67,7 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
     $duplicateRowCount = $this->get('duplicateRowCount');
     $onDuplicate = $this->get('onDuplicate');
     $mismatchCount = $this->get('unMatchCount');
-    if($invalidRowCount > 0) {
+    if ($invalidRowCount > 0) {
       $urlParams = 'type=' . CRM_Import_Parser::ERROR . $this->_importParserUrl;
       $this->set('downloadErrorRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
       $this->set('invalidRowCount', $invalidRowCount);
@@ -105,7 +108,19 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
     }
     $this->assign('dupeActionString', $dupeActionString);
 
-    $properties = array('totalRowCount', 'validRowCount', 'invalidRowCount', 'conflictRowCount', 'downloadConflictRecordsUrl', 'downloadErrorRecordsUrl', 'duplicateRowCount', 'downloadDuplicateRecordsUrl', 'downloadMismatchRecordsUrl', 'groupAdditions', 'unMatchCount');
+    $properties = [
+      'totalRowCount',
+      'validRowCount',
+      'invalidRowCount',
+      'conflictRowCount',
+      'downloadConflictRecordsUrl',
+      'downloadErrorRecordsUrl',
+      'duplicateRowCount',
+      'downloadDuplicateRecordsUrl',
+      'downloadMismatchRecordsUrl',
+      'groupAdditions',
+      'unMatchCount',
+    ];
     foreach ($properties as $property) {
       $this->assign($property, $this->get($property));
     }
@@ -118,15 +133,15 @@ class CRM_Csvimport_Import_Form_SummaryBaseClass extends CRM_Import_Form_Summary
     $file = CRM_Csvimport_Import_Parser::errorFileName(CRM_Csvimport_Import_Parser::ERROR);
     $linecount = 0;
     $handle = fopen($file, "r");
-    while(!feof($handle)){
+    while (!feof($handle)) {
       $line = fgets($handle);
-      if($line != '') {
+      if ($line != '') {
         $linecount++;
       }
     }
     fclose($handle);
 
-    return $linecount-1; // -1 for header
+    return $linecount - 1; // -1 for header
   }
 
 }

@@ -38,13 +38,16 @@
  * statistics
  */
 class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview {
+
   /**
    * This is used in error urls
    * although this code specifies the Event import parser it is a completely generic function that could live anywhere (& probably does in C&P
    * manifestations
+   *
    * @var unknown
    */
   protected $_importParserUrl = '&parser=CRM_Event_Import_Parser';
+
   /**
    * Function to set variables up before form is built
    *
@@ -55,12 +58,12 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $skipColumnHeader = $this->controller->exportValue('DataSource', 'skipColumnHeader');
 
     //get the data from the session
-    $dataValues       = $this->get('dataValues');
-    $mapper           = $this->get('mapper');
-    $invalidRowCount  = $this->get('invalidRowCount');
+    $dataValues = $this->get('dataValues');
+    $mapper = $this->get('mapper');
+    $invalidRowCount = $this->get('invalidRowCount');
     $conflictRowCount = $this->get('conflictRowCount');
-    $mismatchCount    = $this->get('unMatchCount');
-    $entity    = $this->get('_entity');
+    $mismatchCount = $this->get('unMatchCount');
+    $entity = $this->get('_entity');
 
     //get the mapping name displayed if the mappingId is set
     $mappingId = $this->get('loadMappingId');
@@ -95,15 +98,18 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
       $this->set('downloadMismatchRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams));
     }
 
-    $properties = array(
+    $properties = [
       'mapper',
-      'dataValues', 'columnCount',
-      'totalRowCount', 'validRowCount',
-      'invalidRowCount', 'conflictRowCount',
+      'dataValues',
+      'columnCount',
+      'totalRowCount',
+      'validRowCount',
+      'invalidRowCount',
+      'conflictRowCount',
       'downloadErrorRecordsUrl',
       'downloadConflictRecordsUrl',
       'downloadMismatchRecordsUrl',
-    );
+    ];
 
     foreach ($properties as $property) {
       $this->assign($property, $this->get($property));
@@ -118,18 +124,18 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
    * @access public
    */
   public function postProcess() {
-    $fileName         = $this->controller->exportValue('DataSource', 'uploadFile');
+    $fileName = $this->controller->exportValue('DataSource', 'uploadFile');
     $skipColumnHeader = $this->controller->exportValue('DataSource', 'skipColumnHeader');
-    $invalidRowCount  = $this->get('invalidRowCount');
+    $invalidRowCount = $this->get('invalidRowCount');
     $conflictRowCount = $this->get('conflictRowCount');
-    $onDuplicate      = $this->get('onDuplicate');
-    $entity           = $this->get('_entity');
+    $onDuplicate = $this->get('onDuplicate');
+    $entity = $this->get('_entity');
 
     $config = CRM_Core_Config::singleton();
     $separator = $config->fieldSeparator;
 
     $mapper = $this->controller->exportValue('MapField', 'mapper');
-    $mapperKeys = array();
+    $mapperKeys = [];
 
     foreach ($mapper as $key => $value) {
       $mapperKeys[$key] = $mapper[$key][0];
@@ -148,7 +154,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
     $parser->setIgnoreCase($this->controller->get('ignoreCase'));
 
     foreach ($mapper as $key => $value) {
-      $header = array();
+      $header = [];
       if (isset($mapFields[$mapper[$key][0]])) {
         $header[] = $mapFields[$mapper[$key][0]];
       }
@@ -169,7 +175,7 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
 
     $errorStack = CRM_Core_Error::singleton();
     $errors = $errorStack->getErrors();
-    $errorMessage = array();
+    $errorMessage = [];
 
     if (is_array($errors)) {
       foreach ($errors as $key => $value) {
@@ -201,12 +207,16 @@ class CRM_Csvimport_Import_Form_Previewbaseclass extends CRM_Import_Form_Preview
   private function runQueue() {
     //retrieve the queue
     $queue = CRM_Csvimport_Queue_Import::singleton()->getQueue();
-    $runner = new CRM_Queue_Runner(array(
-      'title' => ts('CSVImport Queue Runner - Import'), //title fo the queue
-      'queue' => $queue, //the queue object
-      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE, // continue on error
-      'onEndUrl' => CRM_Utils_System::url('civicrm/csvimporter/import', array('_qf_Summary_display' => true, 'qfKey' => $this->controller->_key), FALSE, NULL, FALSE), //go to page after all tasks are finished
-    ));
+    $runner = new CRM_Queue_Runner([
+      'title' => ts('CSVImport Queue Runner - Import'),
+      //title fo the queue
+      'queue' => $queue,
+      //the queue object
+      'errorMode' => CRM_Queue_Runner::ERROR_CONTINUE,
+      // continue on error
+      'onEndUrl' => CRM_Utils_System::url('civicrm/csvimporter/import', ['_qf_Summary_display' => TRUE, 'qfKey' => $this->controller->_key], FALSE, NULL, FALSE),
+      //go to page after all tasks are finished
+    ]);
 
     $runner->runAllViaWeb(); // does not return
   }

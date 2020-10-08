@@ -39,23 +39,23 @@
 // non - b form ie. this is working as the base import class that doesn't seem to exist
 class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
-  public static $specialCaseFields = array(
-    'MembershipType' => array(
+  public static $specialCaseFields = [
+    'MembershipType' => [
       'membership_type_id' => 'name',
-    ),
-    'Address' => array(
-      'master_id' => array(
+    ],
+    'Address' => [
+      'master_id' => [
         'contact_id',
         'external_identifier', // special case; handled in import task
-      ),
-    ),
-    'County' => array(
+      ],
+    ],
+    'County' => [
       'county_id' => 'name',
-    ),
-    'StateProvince' => array(
+    ],
+    'StateProvince' => [
       'state_province_id' => 'name',
-    ),
-  );
+    ],
+  ];
 
   /**
    * class constructor
@@ -75,7 +75,7 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
 
     // add all the actions
     $config = CRM_Core_Config::singleton();
-    $this->addActions($config->uploadDir, array('uploadFile'));
+    $this->addActions($config->uploadDir, ['uploadFile']);
   }
 
   /**
@@ -83,21 +83,22 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
    *
    * @param $entity
    * @param $params
+   *
    * @return array
    */
   function findAllReferenceFields($entity, $params = NULL) {
-    $referenceFields = array();
-    $allEntities = civicrm_api3('Entity', 'get', array(
+    $referenceFields = [];
+    $allEntities = civicrm_api3('Entity', 'get', [
       'sequential' => 1,
-    ))['values'];
+    ])['values'];
     if (!in_array($entity, $allEntities)) {
       return $referenceFields;
     }
 
     // Get all fields for this entity type
-    $entityFields = civicrm_api3($entity, 'getfields', array(
+    $entityFields = civicrm_api3($entity, 'getfields', [
       'api_action' => "",
-    ));
+    ]);
     if ($entityFields['count'] > 0) {
       foreach ($entityFields['values'] as $k => $val) {
         //todo: Improve logic to find reference fields
@@ -108,21 +109,23 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
           $referenceFields[$k]['entity'] = $val['FKApiName'];
         }
         // spl handling for 'Note' as it can reference multiple entity types
-        else if ($entity == 'Note' && $val['name'] == 'entity_id' && isset($params[$entity])) {
-          // this is a reference field
-          $referenceFields[$k]['label'] = $val['title'];
-          $referenceFields[$k]['name'] = $val['name'];
-          $referenceFields[$k]['entity'] = $params[$entity];
+        else {
+          if ($entity == 'Note' && $val['name'] == 'entity_id' && isset($params[$entity])) {
+            // this is a reference field
+            $referenceFields[$k]['label'] = $val['title'];
+            $referenceFields[$k]['name'] = $val['name'];
+            $referenceFields[$k]['entity'] = $params[$entity];
+          }
         }
       }
     }
 
     // Get all custom fields for this entity of type, contactReference
-    $customFields = civicrm_api3('CustomField', 'get', array(
+    $customFields = civicrm_api3('CustomField', 'get', [
       'sequential' => 1,
       'custom_group_id.extends' => $entity,
       'data_type' => "ContactReference",
-    ));
+    ]);
     if ($customFields['count'] > 0) {
       $referenceFields['custom_fields'] = $customFields['values'];
     }
@@ -131,26 +134,28 @@ class CRM_Csvimport_Import_ControllerBaseClass extends CRM_Core_Controller {
   }
 
   function getSpecialCaseFields($entity) {
-    if(isset(self::$specialCaseFields[$entity])) {
+    if (isset(self::$specialCaseFields[$entity])) {
       return self::$specialCaseFields[$entity];
     }
-    return null;
+    return NULL;
   }
 
   /**
    * Returns all unique fields of given entity
    * (this is added to core as an api 'getuique' but not available in a stable release)
+   *
    * @param $entity
+   *
    * @return array
    */
   public static function findAllUniqueFields($entity) {
-    $uniqueFields = array();
+    $uniqueFields = [];
 
     $dao = _civicrm_api3_get_DAO($entity);
     $uFields = $dao::indices();
 
-    foreach($uFields as $fieldKey => $field) {
-      if(!isset($field['unique']) || !$field['unique']) {
+    foreach ($uFields as $fieldKey => $field) {
+      if (!isset($field['unique']) || !$field['unique']) {
         continue;
       }
       $uniqueFields[$fieldKey] = $field['field'];

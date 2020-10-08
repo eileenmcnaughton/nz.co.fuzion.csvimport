@@ -7,8 +7,11 @@
  * extension.
  */
 class CRM_Csvimport_ExtensionUtil {
+
   const SHORT_NAME = "csvimport";
+
   const LONG_NAME = "nz.co.fuzion.csvimport";
+
   const CLASS_PREFIX = "CRM_Csvimport";
 
   /**
@@ -20,6 +23,7 @@ class CRM_Csvimport_ExtensionUtil {
    * @param string $text
    *   Canonical message text (generally en_US).
    * @param array $params
+   *
    * @return string
    *   Translated text.
    * @see ts
@@ -37,6 +41,7 @@ class CRM_Csvimport_ExtensionUtil {
    * @param string|NULL $file
    *   Ex: NULL.
    *   Ex: 'css/foo.css'.
+   *
    * @return string
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo'.
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
@@ -54,6 +59,7 @@ class CRM_Csvimport_ExtensionUtil {
    * @param string|NULL $file
    *   Ex: NULL.
    *   Ex: 'css/foo.css'.
+   *
    * @return string
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo'.
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
@@ -68,6 +74,7 @@ class CRM_Csvimport_ExtensionUtil {
    *
    * @param string $suffix
    *   Ex: 'Page_HelloWorld' or 'Page\\HelloWorld'.
+   *
    * @return string
    *   Ex: 'CRM_Foo_Page_HelloWorld'.
    */
@@ -362,6 +369,7 @@ function _csvimport_civix_civicrm_themes(&$themes) {
  * This wrapper provides consistency.
  *
  * @link http://php.net/glob
+ *
  * @param string $pattern
  *
  * @return array
@@ -387,8 +395,8 @@ function _csvimport_civix_insert_navigation_menu(&$menu, $path, $item) {
   if (empty($path)) {
     $menu[] = [
       'attributes' => array_merge([
-        'label'      => CRM_Utils_Array::value('name', $item),
-        'active'     => 1,
+        'label' => CRM_Utils_Array::value('name', $item),
+        'active' => 1,
       ], $item),
     ];
     return TRUE;
@@ -425,7 +433,7 @@ function _csvimport_civix_navigationMenu(&$nodes) {
  */
 function _csvimport_civix_fixNavigationMenu(&$nodes) {
   $maxNavID = 1;
-  array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
+  array_walk_recursive($nodes, function ($item, $key) use (&$maxNavID) {
     if ($key === 'navID') {
       $maxNavID = max($maxNavID, $item);
     }

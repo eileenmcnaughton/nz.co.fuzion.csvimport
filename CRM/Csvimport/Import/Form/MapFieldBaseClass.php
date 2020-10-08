@@ -35,34 +35,44 @@
  * This class gets the name of the file to upload
  */
 class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapField {
-  protected $_highlightedFields = array();
+
+  protected $_highlightedFields = [];
+
   /**
    * Fields to remove from the field mapping if 'On Duplicate Update is selected
+   *
    * @var array
    */
-  protected $_onDuplicateUpdateRemove = array();
+  protected $_onDuplicateUpdateRemove = [];
+
   /**
    * Fields to highlight in the field mapping if 'On Duplicate Update is selected
+   *
    * @var array
    */
-  protected $_onDuplicateUpdateHighlight = array();
+  protected $_onDuplicateUpdateHighlight = [];
+
   /**
    * Fields to highlight in the field mapping if 'On Duplicate Skip' or On Duplicate No Check is selected
+   *
    * @var array
    */
-  protected $_onDuplicateSkipHighlight = array();
+  protected $_onDuplicateSkipHighlight = [];
 
   /**
    * name of option value in mapping type group that holds possible option values
+   *
    * @var array
    */
   protected $_mappingType = '';
 
   /**
    * entity being imported to
+   *
    * @var string
    */
   protected $_entity;
+
   /**
    * Function to set variables up before form is built
    *
@@ -76,7 +86,7 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $this->_dataValues = $this->get('dataValues');
     $this->assign('dataValues', $this->_dataValues);
 
-    $skipColumnHeader   = $this->controller->exportValue('DataSource', 'skipColumnHeader');
+    $skipColumnHeader = $this->controller->exportValue('DataSource', 'skipColumnHeader');
     $this->_onDuplicate = $this->get('onDuplicate');
     if ($skipColumnHeader) {
       $this->assign('skipColumnHeader', $skipColumnHeader);
@@ -91,7 +101,7 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $this->doDuplicateOptionHandling();
 
     // find all reference fields for this entity
-    $params = array();
+    $params = [];
     if ($noteEntity = $this->get('noteEntity')) {
       $params[$this->get('entity')] = $noteEntity;
       unset($this->_mapperFields['entity_table']);
@@ -99,18 +109,18 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $refFields = $this->controller->findAllReferenceFields($this->get('entity'), $params);
 
     // get all unique fields for above entities
-    $uniqueFields = array();
+    $uniqueFields = [];
     foreach ($refFields as $k => $rfield) {
       // handle reference fields in custom fields (only contacts for now)
-      if($k == 'custom_fields') {
+      if ($k == 'custom_fields') {
         foreach ($rfield as $each) {
           switch ($each['data_type']) {
             case 'ContactReference':
               try {
-                $uf = civicrm_api3('Contact', 'getunique', array())['values'];
+                $uf = civicrm_api3('Contact', 'getunique', [])['values'];
               }
               catch (CiviCRM_API3_Exception $e) {
-                if($e->getErrorCode() == 'not-found') {
+                if ($e->getErrorCode() == 'not-found') {
                   // fallback method for versions < 5.2
                   $uf = $this->controller->findAllUniqueFields('Contact');
                 }
@@ -119,27 +129,28 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
               break;
           }
         }
-      } else {
+      }
+      else {
         try {
-          $uf = civicrm_api3($rfield['entity'], 'getunique', array())['values'];
+          $uf = civicrm_api3($rfield['entity'], 'getunique', [])['values'];
         }
         catch (CiviCRM_API3_Exception $e) {
-          if($e->getErrorCode() == 'not-found') {
+          if ($e->getErrorCode() == 'not-found') {
             // fallback method for versions < 5.2
             $uf = $this->controller->findAllUniqueFields($rfield['entity']);
           }
         }
         $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
         $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
-        if($extraFields) {
-          foreach($extraFields as $k => $extraField) {
-            if(is_array($extraField)) {
+        if ($extraFields) {
+          foreach ($extraFields as $k => $extraField) {
+            if (is_array($extraField)) {
               foreach ($extraField as $each) {
-                $uniqueFields[$rfield['entity']][$k][] = array($each);
+                $uniqueFields[$rfield['entity']][$k][] = [$each];
               }
             }
             else {
-              $uniqueFields[$rfield['entity']][$k][] = array($extraField);
+              $uniqueFields[$rfield['entity']][$k][] = [$extraField];
             }
           }
         }
@@ -147,40 +158,43 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     }
 
     // Add new fields
-    $refFields = array();
-    foreach($uniqueFields as $entityName => $entity) {
+    $refFields = [];
+    foreach ($uniqueFields as $entityName => $entity) {
       foreach ($entity as $refKey => $entityRefFields) {
         foreach ($entityRefFields as $indexCols) {
           // skip if field name is 'id' as it would be available by default
-          if(count($indexCols) == 1 && $indexCols[0] == 'id') {
+          if (count($indexCols) == 1 && $indexCols[0] == 'id') {
             continue;
           }
 
-          if(count($indexCols) == 1) {
+          if (count($indexCols) == 1) {
             $k = $indexCols[0];
             if (isset($this->_mapperFields[$refKey])) {
               $label = $this->_mapperFields[$refKey];
               $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
-            } else {
+            }
+            else {
               $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
             }
             $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
           }
-          else if(count($indexCols) > 1) {
-            // handle combination indexes
-            if($this->_mapperFields[$refKey]) {
-              $label = $this->_mapperFields[$refKey];
-            }
-            else {
-              $label = $refKey;
-            }
-            $indexKey = '';
-            foreach ($indexCols as $col) {
-              $indexKey .= '#'.$col;
-            }
-            foreach ($indexCols as $key => $col) {
-              $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
-              $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols)+array('active' => $col));
+          else {
+            if (count($indexCols) > 1) {
+              // handle combination indexes
+              if ($this->_mapperFields[$refKey]) {
+                $label = $this->_mapperFields[$refKey];
+              }
+              else {
+                $label = $refKey;
+              }
+              $indexKey = '';
+              foreach ($indexCols as $col) {
+                $indexKey .= '#' . $col;
+              }
+              foreach ($indexCols as $key => $col) {
+                $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
+                $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols) + ['active' => $col]);
+              }
             }
           }
         }
@@ -204,11 +218,12 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
       }
     }
     elseif ($this->_onDuplicate == CRM_Import_Parser::DUPLICATE_SKIP ||
-        $this->_onDuplicate == CRM_Import_Parser::DUPLICATE_NOCHECK
+      $this->_onDuplicate == CRM_Import_Parser::DUPLICATE_NOCHECK
     ) {
       $this->_highlightedFields = $this->_highlightedFields + $this->_onDuplicateUpdateHighlight;
     }
   }
+
   /**
    * Function to actually build the form
    *
@@ -229,16 +244,16 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
 
       list($mappingName, $mappingContactType, $mappingLocation, $mappingPhoneType, $mappingRelation) = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
 
-      $mappingName        = $mappingName[1];
+      $mappingName = $mappingName[1];
       $mappingContactType = $mappingContactType[1];
-      $mappingLocation    = CRM_Utils_Array::value('1', $mappingLocation);
-      $mappingPhoneType   = CRM_Utils_Array::value('1', $mappingPhoneType);
-      $mappingRelation    = CRM_Utils_Array::value('1', $mappingRelation);
+      $mappingLocation = CRM_Utils_Array::value('1', $mappingLocation);
+      $mappingPhoneType = CRM_Utils_Array::value('1', $mappingPhoneType);
+      $mappingRelation = CRM_Utils_Array::value('1', $mappingRelation);
 
       //mapping is to be loaded from database
 
-      $params         = array('id' => $savedMapping);
-      $temp           = array();
+      $params = ['id' => $savedMapping];
+      $temp = [];
       $mappingDetails = CRM_Core_BAO_Mapping::retrieve($params, $temp);
 
       $this->assign('loadedMapping', $mappingDetails->name);
@@ -262,13 +277,13 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
       $this->add('text', 'saveMappingDesc', ts('Description'));
     }
 
-    $this->addElement('checkbox', 'saveMapping', $saveDetailsName, NULL, array('onclick' => "showSaveDetails(this)"));
+    $this->addElement('checkbox', 'saveMapping', $saveDetailsName, NULL, ['onclick' => "showSaveDetails(this)"]);
 
-    $defaults         = array();
-    $mapperKeys       = array_keys($this->_mapperFields);
-    $hasHeaders       = !empty($this->_columnHeaders);
-    $headerPatterns   = $this->get('headerPatterns');
-    $dataPatterns     = $this->get('dataPatterns');
+    $defaults = [];
+    $mapperKeys = array_keys($this->_mapperFields);
+    $hasHeaders = !empty($this->_columnHeaders);
+    $headerPatterns = $this->get('headerPatterns');
+    $dataPatterns = $this->get('dataPatterns');
 
 
     /* Initialize all field usages to false */
@@ -280,13 +295,13 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $sel1 = $this->_mapperFields;
 
     $sel2[''] = NULL;
-    $js       = "<script type='text/javascript'>\n";
+    $js = "<script type='text/javascript'>\n";
     $formName = 'document.forms.' . $this->_name;
     // this next section has a load of copy & paste that I don't really follow
     //used to warn for mismatch column count or mismatch mapping
     $warning = 0;
     for ($i = 0; $i < $this->_columnCount; $i++) {
-      $sel = &$this->addElement('hierselect', "mapper[$i]", ts('Mapper for Field %1', array(1 => $i)), NULL);
+      $sel = &$this->addElement('hierselect', "mapper[$i]", ts('Mapper for Field %1', [1 => $i]), NULL);
       $jsSet = FALSE;
       if ($this->get('savedMapping')) {
         if (isset($mappingName[$i])) {
@@ -303,15 +318,15 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
             }
 
             $js .= "{$formName}['mapper[$i][3]'].style.display = 'none';\n";
-            $defaults["mapper[$i]"] = array(
+            $defaults["mapper[$i]"] = [
               $mappingHeader[0],
               (isset($locationId)) ? $locationId : "",
               (isset($phoneType)) ? $phoneType : "",
-            );
+            ];
             $jsSet = TRUE;
           }
           else {
-            $defaults["mapper[$i]"] = array();
+            $defaults["mapper[$i]"] = [];
           }
           if (!$jsSet) {
             for ($k = 1; $k < 4; $k++) {
@@ -324,10 +339,10 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
           $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_" . $i . "_');\n";
 
           if ($hasHeaders) {
-            $defaults["mapper[$i]"] = array($this->defaultFromHeader($this->_columnHeaders[$i], $headerPatterns));
+            $defaults["mapper[$i]"] = [$this->defaultFromHeader($this->_columnHeaders[$i], $headerPatterns)];
           }
           else {
-            $defaults["mapper[$i]"] = array($this->defaultFromData($dataPatterns, $i));
+            $defaults["mapper[$i]"] = [$this->defaultFromData($dataPatterns, $i)];
           }
         }
         //end of load mapping
@@ -336,24 +351,24 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_" . $i . "_');\n";
         if ($hasHeaders) {
           // Infer the default from the skipped headers if we have them
-          $defaults["mapper[$i]"] = array(
+          $defaults["mapper[$i]"] = [
             $this->defaultFromHeader($this->_columnHeaders[$i],
               $headerPatterns
             ),
             //                     $defaultLocationType->id
             0,
-          );
+          ];
         }
         else {
           // Otherwise guess the default from the form of the data
-          $defaults["mapper[$i]"] = array(
+          $defaults["mapper[$i]"] = [
             $this->defaultFromData($dataPatterns, $i),
             //                     $defaultLocationType->id
             0,
-          );
+          ];
         }
       }
-      $sel->setOptions(array($sel1, $sel2, (isset($sel3)) ? $sel3 : "", (isset($sel4)) ? $sel4 : ""));
+      $sel->setOptions([$sel1, $sel2, (isset($sel3)) ? $sel3 : "", (isset($sel4)) ? $sel4 : ""]);
     }
     $js .= "</script>\n";
     $this->assign('initHideBoxes', $js);
@@ -375,22 +390,22 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
 
     $this->setDefaults($defaults);
 
-    $this->addButtons(array(
-        array(
+    $this->addButtons([
+        [
           'type' => 'back',
           'name' => ts('<< Previous'),
-        ),
-        array(
+        ],
+        [
           'type' => 'next',
           'name' => ts('Continue >>'),
           'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
           'isDefault' => TRUE,
-        ),
-        array(
+        ],
+        [
           'type' => 'cancel',
           'name' => ts('Cancel'),
-        ),
-      )
+        ],
+      ]
     );
   }
 
@@ -407,24 +422,24 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
    * @access public
    */
   static function formRule($fields, $files, $self) {
-    $errors = array();
+    $errors = [];
     $fieldMessage = NULL;
     if (!array_key_exists('savedMapping', $fields)) {
-      $importKeys = array();
+      $importKeys = [];
       foreach ($fields['mapper'] as $mapperPart) {
         $importKeys[] = $mapperPart[0];
       }
 
       $contactTypeId = $self->get('contactType');
-      $contactTypes = array(
+      $contactTypes = [
         CRM_Import_Parser::CONTACT_INDIVIDUAL => 'Individual',
         CRM_Import_Parser::CONTACT_HOUSEHOLD => 'Household',
         CRM_Import_Parser::CONTACT_ORGANIZATION => 'Organization',
-      );
-      $params = array(
-        'used'         => 'Unsupervised',
+      ];
+      $params = [
+        'used' => 'Unsupervised',
         'contact_type' => $contactTypes[$contactTypeId],
-      );
+      ];
       list($ruleFields, $threshold) = CRM_Dedupe_BAO_RuleGroup::dedupeRuleFieldsWeight($params);
       $weightSum = 0;
       foreach ($importKeys as $key => $val) {
@@ -493,10 +508,10 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $config = CRM_Core_Config::singleton();
     $separator = $config->fieldSeparator;
 
-    $mapperKeys     = array();
-    $mapper         = array();
-    $mapperKeys     = $this->controller->exportValue($this->_name, 'mapper');
-    $mapperKeysMain = array();
+    $mapperKeys = [];
+    $mapper = [];
+    $mapperKeys = $this->controller->exportValue($this->_name, 'mapper');
+    $mapperKeysMain = [];
 
     for ($i = 0; $i < $this->_columnCount; $i++) {
       $mapper[$i] = $this->_mapperFields[$mapperKeys[$i][0]];
@@ -515,7 +530,7 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
       $mappingFields->mapping_id = $params['mappingId'];
       $mappingFields->find();
 
-      $mappingFieldsId = array();
+      $mappingFieldsId = [];
       while ($mappingFields->fetch()) {
         if ($mappingFields->id) {
           $mappingFieldsId[$mappingFields->column_number] = $mappingFields->id;
@@ -529,9 +544,9 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         $updateMappingFields->column_number = $i;
 
         $explodedValues = explode('_', $mapperKeys[$i][0]);
-        $id             = CRM_Utils_Array::value(0, $explodedValues);
-        $first          = CRM_Utils_Array::value(1, $explodedValues);
-        $second         = CRM_Utils_Array::value(2, $explodedValues);
+        $id = CRM_Utils_Array::value(0, $explodedValues);
+        $first = CRM_Utils_Array::value(1, $explodedValues);
+        $second = CRM_Utils_Array::value(2, $explodedValues);
 
         $updateMappingFields->name = $mapper[$i];
         $updateMappingFields->save();
@@ -540,14 +555,14 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
 
     //Saving Mapping Details and Records
     if (CRM_Utils_Array::value('saveMapping', $params)) {
-      $mappingParams = array(
+      $mappingParams = [
         'name' => $params['saveMappingName'],
         'description' => $params['saveMappingDesc'],
         'mapping_type_id' => CRM_Core_OptionGroup::getValue('mapping_type',
           $this->_mappingType,
           'name'
         ),
-      );
+      ];
       $saveMapping = CRM_Core_BAO_Mapping::add($mappingParams);
 
       for ($i = 0; $i < $this->_columnCount; $i++) {
@@ -556,9 +571,9 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         $saveMappingFields->column_number = $i;
 
         $explodedValues = explode('_', $mapperKeys[$i][0]);
-        $id             = CRM_Utils_Array::value(0, $explodedValues);
-        $first          = CRM_Utils_Array::value(1, $explodedValues);
-        $second         = CRM_Utils_Array::value(2, $explodedValues);
+        $id = CRM_Utils_Array::value(0, $explodedValues);
+        $first = CRM_Utils_Array::value(1, $explodedValues);
+        $second = CRM_Utils_Array::value(2, $explodedValues);
 
         $saveMappingFields->name = $mapper[$i];
         $saveMappingFields->save();
@@ -569,8 +584,8 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $this->set('_entity', $this->_entity);
 
     //remove items that were not processed on previous import (maybe due to errors)
-    $queueClass = 'CRM_Queue_Queue_'.CRM_Csvimport_Queue_Import::QUEUE_TYPE;
-    $prevQueue = new $queueClass(array('name' => CRM_Csvimport_Queue_Import::QUEUE_NAME));
+    $queueClass = 'CRM_Queue_Queue_' . CRM_Csvimport_Queue_Import::QUEUE_TYPE;
+    $prevQueue = new $queueClass(['name' => CRM_Csvimport_Queue_Import::QUEUE_NAME]);
     $prevQueue->deleteQueue();
 
     $parser = new $this->_parser($mapperKeysMain);

@@ -54,7 +54,7 @@
       <tr class="crm-api-import-uploadfile-form-block-uploadFile">
         <td class="label">{$form.uploadFile.label}</td>
         <td>{$form.uploadFile.html}<br/>
-      <span class="description">
+          <span class="description">
         {ts}File format must be comma-separated-values (CSV).{/ts}
       </span>
         </td>
@@ -109,7 +109,7 @@
       {if $savedMapping}
       <tr class="crm-api-import-uploadfile-form-block-savedMapping">
         <td class="label">{if $loadedMapping}{ts}Select a Different Field Mapping{/ts}{else}{ts}Load Saved Field
-          Mapping{/ts}{/if}
+            Mapping{/ts}{/if}
         </td>
         <td><span>{$form.savedMapping.html}</span></td>
       </tr>
@@ -123,8 +123,8 @@
   </div>
 </div>
 {literal}
-  <script type="text/javascript" >
-    CRM.$('select#entity').on('change', function() {
+  <script type="text/javascript">
+    CRM.$('select#entity').on('change', function () {
       if (CRM.$(this).val() == 'Note') {
         CRM.$('#noteEntityWrapper').show();
       } else {
@@ -133,8 +133,7 @@
     });
     if (CRM.$('select#entity option:selected').val() == 'Note') {
       CRM.$('#noteEntityWrapper').show();
-    }
-    else {
+    } else {
       CRM.$('#noteEntityWrapper').hide();
     }
   </script>

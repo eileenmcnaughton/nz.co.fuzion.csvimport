@@ -9,7 +9,7 @@
     <url desc="Documentation">https://github.com/eileenmcnaughton/nz.co.fuzion.csvimport/blob/master/README</url>
     <url desc="Support">http://forum.civicrm.org</url>
     <url desc="Licensing">http://civicrm.org/licensing</url>
- </urls>
+  </urls>
   <maintainer>
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
@@ -20,7 +20,8 @@
   <compatibility>
     <ver>5.11</ver>
   </compatibility>
-  <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it</comments>
+  <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
+  </comments>
   <civix>
     <namespace>CRM/Csvimport</namespace>
   </civix>

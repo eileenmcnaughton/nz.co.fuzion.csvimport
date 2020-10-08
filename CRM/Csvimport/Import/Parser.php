@@ -32,8 +32,6 @@
  * $Id$
  *
  */
-
-
 abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
 
   protected $_fileName;
@@ -83,6 +81,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    * Set max errors count
    */
   const MAX_ERRORS = 250;
+
   protected $_maxErrorCount = self::MAX_ERRORS;
 
   function run($fileName,
@@ -114,14 +113,14 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
     $this->_invalidRowCount = $this->_validCount = 0;
     $this->_totalCount = $this->_conflictCount = 0;
 
-    $this->_errors = array();
-    $this->_warnings = array();
-    $this->_conflicts = array();
+    $this->_errors = [];
+    $this->_warnings = [];
+    $this->_conflicts = [];
 
     $this->_fileSize = number_format(filesize($fileName) / 1024.0, 2);
 
     if ($mode == self::MODE_MAPFIELD) {
-      $this->_rows = array();
+      $this->_rows = [];
     }
     else {
       $this->_activeFieldCount = count($this->_activeFields);
@@ -256,35 +255,38 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         // parsing is done; if mode is import, add last items in batch to queue
         $this->addBatchToQueue();
         $importErrorHeaders = array_merge(
-          array(ts('Reason')),
+          [ts('Reason')],
           $customHeaders
         );
         // add headers to error file for import mode
-        self::exportCSV($this->_errorFileName, $importErrorHeaders, array());
+        self::exportCSV($this->_errorFileName, $importErrorHeaders, []);
       }
 
       if ($this->_invalidRowCount) {
         // removed view url for invalid contacts
-        $headers = array_merge(array(ts('Line Number'),
-            ts('Reason'),
-          ),
+        $headers = array_merge([
+          ts('Line Number'),
+          ts('Reason'),
+        ],
           $customHeaders
         );
         self::exportCSV($this->_errorFileName, $headers, $this->_errors);
       }
       if ($this->_conflictCount) {
-        $headers = array_merge(array(ts('Line Number'),
-            ts('Reason'),
-          ),
+        $headers = array_merge([
+          ts('Line Number'),
+          ts('Reason'),
+        ],
           $customHeaders
         );
         $this->_conflictFileName = self::errorFileName(self::CONFLICT);
         self::exportCSV($this->_conflictFileName, $headers, $this->_conflicts);
       }
       if ($this->_duplicateCount) {
-        $headers = array_merge(array(ts('Line Number'),
-            ts('View Activity History URL'),
-          ),
+        $headers = array_merge([
+          ts('Line Number'),
+          ts('View Activity History URL'),
+        ],
           $customHeaders
         );
 
@@ -295,6 +297,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
     //echo "$this->_totalCount,$this->_invalidRowCount,$this->_conflictCount,$this->_duplicateCount";
     return $this->fini();
   }
+
   /**
    * Given a list of the importable field keys that the user has selected
    * set the active fields array to this list
@@ -311,7 +314,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         $this->_activeFields[] = new CRM_Csvimport_Import_Field('', ts('- do not import -'));
       }
       else {
-        if(isset($this->_refFields[$key])) {
+        if (isset($this->_refFields[$key])) {
           $refField = $this->_refFields[$key];
           $key = $refField->id;
           $this->_activeFields[] = clone($this->_fields[$key]);
@@ -333,9 +336,9 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    * @access public
    */
   function &getActiveFieldParams($handleRef = FALSE) {
-    $params = array();
-    $combinationRefs = array();
-    $combinationParams = array();
+    $params = [];
+    $combinationRefs = [];
+    $combinationParams = [];
 
     for ($i = 0; $i < $this->_activeFieldCount; $i++) {
       if (isset($this->_activeFields[$i]->_value)
@@ -343,19 +346,19 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
         && !isset($this->_activeFields[$i]->_related)
       ) {
 
-        if($handleRef && isset($this->_activeFields[$i]->_refField)) {
+        if ($handleRef && isset($this->_activeFields[$i]->_refField)) {
           $refField = $this->_activeFields[$i]->_refField;
           // get id of entity from ref field
-          $apiParams = array(
+          $apiParams = [
             'sequential' => 1,
-            'return' => array("id"),
-          );
+            'return' => ["id"],
+          ];
           // for combination indexes
-          if(is_array($refField->entity_field_name)) {
+          if (is_array($refField->entity_field_name)) {
 
-            if(!isset($combinationRefs[$refField->id])) {
+            if (!isset($combinationRefs[$refField->id])) {
               foreach ($refField->entity_field_name as $k => $name) {
-                if($k === 'active') {
+                if ($k === 'active') {
                   continue;
                 }
                 $combinationRefs[$refField->id][] = $name;
@@ -366,7 +369,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
             $combinationParams[$refField->id][$refField->entity_field_name['active']] = $this->_activeFields[$i]->_value;
             $arr = array_keys($combinationParams[$refField->id]);
             sort($arr);
-            if($arr != $combinationRefs[$refField->id]) {
+            if ($arr != $combinationRefs[$refField->id]) {
               // continue till all reference fields for this combination are added to apiParams
               continue;
             }
@@ -378,7 +381,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
             $apiParams[$refField->entity_field_name] = $this->_activeFields[$i]->_value;
           }
 
-          $params[$this->_activeFields[$i]->_name] = array('api.' . $refField->entity_name . '.get' => $apiParams);
+          $params[$this->_activeFields[$i]->_name] = ['api.' . $refField->entity_name . '.get' => $apiParams];
         }
         else {
           $params[$this->_activeFields[$i]->_name] = $this->_activeFields[$i]->_value;
@@ -399,10 +402,10 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       $tempField = CRM_Contact_BAO_Contact::importableFields('All', NULL);
 
       // check reference fields
-      $isRef = false;
+      $isRef = FALSE;
       foreach ($this->_refFields as $ref) {
         if ($name == $ref->id) {
-          $isRef = true;
+          $isRef = TRUE;
         }
       }
 
@@ -481,12 +484,12 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
    * @param array $header
    * @param data $data
    *
-   * @internal param string $filename
    * @return void
    * @access public
+   * @internal param string $filename
    */
   static function exportCSV($fileName, $header, $data) {
-    $output = array();
+    $output = [];
     $fd = fopen($fileName, 'w');
 
     foreach ($header as $key => $value) {
@@ -512,7 +515,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       $output[] = implode($config->fieldSeparator, $datum);
     }
     fwrite($fd, implode("\n", $output));
-    if(count($data) == 0) {
+    if (count($data) == 0) {
       fwrite($fd, "\n");
     }
     fclose($fd);

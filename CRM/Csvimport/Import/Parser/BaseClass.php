@@ -37,6 +37,7 @@
  * class to parse membership csv files
  */
 class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser {
+
   protected $_mapperKeys;
 
   private $_contactIdIndex;
@@ -46,7 +47,7 @@ class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser 
    *
    * @array
    */
-  protected $_newEntities = array();
+  protected $_newEntities = [];
 
   /**
    * class constructor
@@ -77,12 +78,14 @@ class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser 
 
     $this->setActiveFields($this->_mapperKeys);
   }
+
   /**
    * Set fields to an array of importable fields
    */
   function setFields() {
-   $this->_fields = array();
+    $this->_fields = [];
   }
+
   /**
    * handle the values in mapField mode
    *
@@ -146,6 +149,7 @@ class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser 
    * @return void
    * @access public
    */
-  function fini() {}
+  function fini() {
+  }
 }
 

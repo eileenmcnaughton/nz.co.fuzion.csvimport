@@ -37,11 +37,17 @@
  * This class gets the name of the file to upload
  */
 class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_DataSourceBaseClass {
+
   public $_parser = 'CRM_Csvimport_Import_Parser_Api';
+
   protected $_enableContactOptions = FALSE;
+
   protected $_userContext = 'civicrm/csvimporter/import';
+
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
+
   protected $_entity;
+
   /**
    * Include duplicate options
    */
@@ -56,13 +62,13 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
   public function buildQuickForm() {
     //We are gathering this as a text field for now. I tried to put it into the URL but for some reason
     //adding &x=y in the url causes it not to load at all.
-    $allEntities = civicrm_api3('entity', 'get', array());
-    $creatableEntities = array();
+    $allEntities = civicrm_api3('entity', 'get', []);
+    $creatableEntities = [];
     foreach ($allEntities['values'] as $entity) {
       try {
-        $actions = civicrm_api3($entity, 'getactions', array('entity' => $entity));
+        $actions = civicrm_api3($entity, 'getactions', ['entity' => $entity]);
         //can add 'submit' later when we can figure out how to specify on submit
-        if(array_intersect(array('create',), $actions['values'])) {
+        if (array_intersect(['create',], $actions['values'])) {
           $creatableEntities[$entity] = $entity;
         }
       }
@@ -70,22 +76,23 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
         // Ignore entities that raise an exception
       }
     }
-    $this->add('select', 'entity', ts('Entity To Import'), array('' => ts('- select -')) + $creatableEntities);
+    $this->add('select', 'entity', ts('Entity To Import'), ['' => ts('- select -')] + $creatableEntities);
 
     // handle 'Note' entity
     $entities = CRM_Core_BAO_Note::entityTables();
-    $noteEntities = array();
+    $noteEntities = [];
     foreach ($entities as $key => $entity) {
       $noteEntities[$entity] = $entity;
     }
     asort($noteEntities);
-    $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + array('0' => ts('Set this in CSV')));
+    $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')]);
 
     parent::buildQuickForm();
   }
 
   /**
    * Set defaults for form
+   *
    * @return array
    */
   public function setDefaultValues() {

@@ -1,4 +1,5 @@
 <?php
+
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.4                                                |
@@ -24,6 +25,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 class CRM_Csvimport_Import_Field {
 
   /**#@+
@@ -43,33 +45,39 @@ class CRM_Csvimport_Import_Field {
 
   /**
    * type of field
+   *
    * @var enum
    */
   public $_type;
 
   /**
    * regexp to match the CSV header of this column/field
+   *
    * @var string
    */
   public $_headerPattern;
 
   /**
    * regexp to match the pattern of data from various column/fields
+   *
    * @var string
    */
   public $_dataPattern;
 
   /**
    * ReferenceField object
+   *
    * @var object
    */
   public $_refField;
 
   /**
    * value of this field
+   *
    * @var object
    */
   public $_value;
+
   function __construct($name, $title, $type = CRM_Utils_Type::T_INT, $headerPattern = '//', $dataPattern = '//') {
     $this->_name = $name;
     $this->_title = $title;
@@ -94,6 +102,7 @@ class CRM_Csvimport_Import_Field {
 
   /**
    * $value is an object of type ReferenceField
+   *
    * @param $value
    */
   function setRefField($value) {

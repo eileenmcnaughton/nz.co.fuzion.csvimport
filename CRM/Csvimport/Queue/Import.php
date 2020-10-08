@@ -21,11 +21,11 @@ class CRM_Csvimport_Queue_Import {
   }
 
   private function __construct() {
-    $this->queue = CRM_Queue_Service::singleton()->create(array(
+    $this->queue = CRM_Queue_Service::singleton()->create([
       'type' => self::QUEUE_TYPE,
       'name' => self::QUEUE_NAME,
-      'reset' => false,
-    ));
+      'reset' => FALSE,
+    ]);
   }
 
   /**
