@@ -115,10 +115,9 @@ class CRM_Csvimport_Import_Form_DataSourceBaseClass extends CRM_Core_Form {
       );
     }
     //get the saved mapping details
-    $mappingArray = CRM_Core_BAO_Mapping::getMappings(CRM_Core_OptionGroup::getValue('mapping_type',
-        $this->_mappingType,
-        'name'
-      ));
+    $mappingArray = CRM_Core_BAO_Mapping::getMappings(
+      CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', $this->_mappingType)
+    );
     $this->assign('savedMapping', $mappingArray);
     $this->add('select', 'savedMapping', ts('Mapping Option'), array('' => ts('- select -')) + $mappingArray);
 
