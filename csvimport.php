@@ -1,6 +1,7 @@
 <?php
 
 require_once 'csvimport.civix.php';
+
 use CRM_Csvimport_ExtensionUtil as E;
 
 /**
@@ -74,17 +75,18 @@ function csvimport_civicrm_managed(&$entities) {
  * Implementation of hook_civicrm_navigationMenu
  *
  * Adds entries to the navigation menu
+ *
  * @param array $menu
  */
 function csvimport_civicrm_navigationMenu(&$menu) {
-  $item[] =  array (
+  $item[] = [
     'label' => E::ts('API csv Import'),
-    'name'       => 'CSV to api bridge',
+    'name' => 'CSV to api bridge',
     'url' => 'civicrm/csvimporter/import',
     'permission' => 'administer CiviCRM',
-    'operator'   => NULL,
-    'separator'  => NULL,
-  );
+    'operator' => NULL,
+    'separator' => NULL,
+  ];
   _csvimport_civix_insert_navigation_menu($menu, 'Administer', $item[0]);
   _csvimport_civix_navigationMenu($menu);
 }
