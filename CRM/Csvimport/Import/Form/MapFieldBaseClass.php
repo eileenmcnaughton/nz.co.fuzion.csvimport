@@ -29,8 +29,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
  */
 
 /**
@@ -271,7 +269,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $hasHeaders       = !empty($this->_columnHeaders);
     $headerPatterns   = $this->get('headerPatterns');
     $dataPatterns     = $this->get('dataPatterns');
-    $hasLocationTypes = $this->get('fieldTypes');
 
 
     /* Initialize all field usages to false */
