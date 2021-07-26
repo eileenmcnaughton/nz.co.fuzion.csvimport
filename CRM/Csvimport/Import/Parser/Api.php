@@ -35,6 +35,9 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
       if (empty($values['title']) && !empty($values['label'])) {
         $this->_fields[$field]['title'] = $values['label'];
       }
+      if (!empty($values['custom_group_id'])) {
+        $this->_fields[$field]['title'] = $values["groupTitle"] . ': ' . $values["title"];
+      }
       // date is 4 & time is 8. Together they make 12 - in theory a binary operator makes sense here but as it's not a common pattern it doesn't seem worth the confusion
       if (CRM_Utils_Array::value('type', $values) == 12
         || CRM_Utils_Array::value('type', $values) == 4) {
