@@ -14,11 +14,11 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2021-05-13</releaseDate>
-  <version>1.6</version>
+  <releaseDate>2021-08-26</releaseDate>
+  <version>1.7</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.35</ver>
+    <ver>5.40</ver>
   </compatibility>
   <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
   </comments>
