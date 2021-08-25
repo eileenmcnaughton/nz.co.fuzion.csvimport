@@ -78,13 +78,13 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
     }
     $this->add('select', 'entity', ts('Entity To Import'), ['' => ts('- select -')] + $creatableEntities);
 
-    // handle 'Note' entity
-    $entities = CRM_Core_BAO_Note::entityTables();
-    $noteEntities = [];
-    foreach ($entities as $key => $entity) {
-      $noteEntities[$entity] = $entity;
-    }
-    asort($noteEntities);
+    $noteEntities = [
+      'civicrm_relationship' => 'Relationship',
+      'civicrm_contact' => 'Contact',
+      'civicrm_participant' => 'Participant',
+      'civicrm_contribution' => 'Contribution',
+    ];
+    
     $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')]);
 
     parent::buildQuickForm();
