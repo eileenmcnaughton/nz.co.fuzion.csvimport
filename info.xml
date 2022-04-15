@@ -18,7 +18,7 @@
   <version>1.7</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.40</ver>
+    <ver>5.50</ver>
   </compatibility>
   <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
   </comments>
