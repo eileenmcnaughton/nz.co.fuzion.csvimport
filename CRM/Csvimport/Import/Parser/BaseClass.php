@@ -87,18 +87,6 @@ class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser 
   }
 
   /**
-   * handle the values in mapField mode
-   *
-   * @param array $values the array of values belonging to this line
-   *
-   * @return boolean
-   * @access public
-   */
-  function mapField(&$values) {
-    return CRM_Import_Parser::VALID;
-  }
-
-  /**
    * handle the values in preview mode
    *
    * @param array $values the array of values belonging to this line

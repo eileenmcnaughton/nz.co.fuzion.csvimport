@@ -156,7 +156,7 @@ abstract class CRM_Csvimport_Import_Parser extends CRM_Import_Parser {
       $this->_totalCount++;
 
       if ($mode == self::MODE_MAPFIELD) {
-        $returnCode = $this->mapField($values);
+        $returnCode = CRM_Import_Parser::VALID;
       }
       elseif ($mode == self::MODE_PREVIEW) {
         $returnCode = $this->preview($values);
