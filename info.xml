@@ -24,5 +24,9 @@
   </comments>
   <civix>
     <namespace>CRM/Csvimport</namespace>
+    <format>2.0</format>
   </civix>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
 </extension>

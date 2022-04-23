@@ -17,7 +17,6 @@ function csvimport_civicrm_config(&$config) {
  * @param $files array(string)
  */
 function csvimport_civicrm_xmlMenu(&$files) {
-  _csvimport_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -68,7 +67,6 @@ function csvimport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * is installed, disabled, uninstalled.
  */
 function csvimport_civicrm_managed(&$entities) {
-  _csvimport_civix_civicrm_managed($entities);
 }
 
 /**
