@@ -242,14 +242,9 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     else {
       $savedMapping = $this->get('savedMapping');
 
-      list($mappingName, $mappingContactType, $mappingLocation, $mappingPhoneType, $mappingRelation) = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
+      list($mappingName) = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
 
       $mappingName = $mappingName[1];
-      $mappingContactType = $mappingContactType[1];
-      $mappingLocation = CRM_Utils_Array::value('1', $mappingLocation);
-      $mappingPhoneType = CRM_Utils_Array::value('1', $mappingPhoneType);
-      $mappingRelation = CRM_Utils_Array::value('1', $mappingRelation);
-
       //mapping is to be loaded from database
 
       $params = ['id' => $savedMapping];
@@ -423,34 +418,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
    */
   static function formRule($fields, $files, $self) {
     $errors = [];
-    $fieldMessage = NULL;
-    if (!array_key_exists('savedMapping', $fields)) {
-      $importKeys = [];
-      foreach ($fields['mapper'] as $mapperPart) {
-        $importKeys[] = $mapperPart[0];
-      }
-
-      $contactTypeId = $self->get('contactType');
-      $contactTypes = [
-        CRM_Import_Parser::CONTACT_INDIVIDUAL => 'Individual',
-        CRM_Import_Parser::CONTACT_HOUSEHOLD => 'Household',
-        CRM_Import_Parser::CONTACT_ORGANIZATION => 'Organization',
-      ];
-      $params = [
-        'used' => 'Unsupervised',
-        'contact_type' => $contactTypes[$contactTypeId],
-      ];
-      list($ruleFields, $threshold) = CRM_Dedupe_BAO_RuleGroup::dedupeRuleFieldsWeight($params);
-      $weightSum = 0;
-      foreach ($importKeys as $key => $val) {
-        if (array_key_exists($val, $ruleFields)) {
-          $weightSum += $ruleFields[$val];
-        }
-      }
-      foreach ($ruleFields as $field => $weight) {
-        $fieldMessage .= ' ' . $field . '(weight ' . $weight . ')';
-      }
-    }
 
     if (CRM_Utils_Array::value('saveMapping', $fields)) {
       $nameField = CRM_Utils_Array::value('saveMappingName', $fields);
@@ -508,7 +475,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
     $config = CRM_Core_Config::singleton();
     $separator = $config->fieldSeparator;
 
-    $mapperKeys = [];
     $mapper = [];
     $mapperKeys = $this->controller->exportValue($this->_name, 'mapper');
     $mapperKeysMain = [];
@@ -543,11 +509,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         $updateMappingFields->mapping_id = $params['mappingId'];
         $updateMappingFields->column_number = $i;
 
-        $explodedValues = explode('_', $mapperKeys[$i][0]);
-        $id = CRM_Utils_Array::value(0, $explodedValues);
-        $first = CRM_Utils_Array::value(1, $explodedValues);
-        $second = CRM_Utils_Array::value(2, $explodedValues);
-
         $updateMappingFields->name = $mapper[$i];
         $updateMappingFields->save();
       }
@@ -566,11 +527,6 @@ class CRM_Csvimport_Import_Form_MapFieldBaseClass extends CRM_Import_Form_MapFie
         $saveMappingFields = new CRM_Core_DAO_MappingField();
         $saveMappingFields->mapping_id = $saveMapping->id;
         $saveMappingFields->column_number = $i;
-
-        $explodedValues = explode('_', $mapperKeys[$i][0]);
-        $id = CRM_Utils_Array::value(0, $explodedValues);
-        $first = CRM_Utils_Array::value(1, $explodedValues);
-        $second = CRM_Utils_Array::value(2, $explodedValues);
 
         $saveMappingFields->name = $mapper[$i];
         $saveMappingFields->save();
