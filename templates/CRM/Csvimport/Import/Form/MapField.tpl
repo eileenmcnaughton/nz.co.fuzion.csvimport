@@ -47,7 +47,7 @@
     </tr>
     <tr>
       <td>{* Table for mapping data to CRM fields *}
-        {include file="CRM/Event/Import/Form/MapTable.tpl}
+        {include file="CRM/Csvimport/Import/Form/MapTable549Version.tpl"}
      </td>
    </tr>
    <tr>

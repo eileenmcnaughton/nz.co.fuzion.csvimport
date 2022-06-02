@@ -99,7 +99,7 @@
 
 
   {* Table for mapping preview *}
-{include file="CRM/Event/Import/Form/MapTable.tpl}
+    {include file="CRM/Csvimport/Import/Form/MapTable549Version.tpl"}
 
 
  <div class="crm-submit-buttons">
