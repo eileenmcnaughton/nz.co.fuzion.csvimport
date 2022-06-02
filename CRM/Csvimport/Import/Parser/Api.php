@@ -25,6 +25,15 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Csvimport_Import_Parser_BaseCl
 
   protected $_ignoreCase = FALSE;
 
+  /**
+   * Can be removed once removed from CRM_Import_Parser.
+   *
+   * @return bool
+   */
+  public function mapField(&$values) {
+    return CRM_Import_Parser::VALID;
+  }
+
   function setFields() {
     $fields = civicrm_api3($this->_entity, 'getfields', ['action' => 'create']);
     $this->_fields = $fields['values'];

@@ -36,7 +36,7 @@
 /**
  * class to parse membership csv files
  */
-class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser {
+abstract class CRM_Csvimport_Import_Parser_BaseClass extends CRM_Csvimport_Import_Parser {
 
   protected $_mapperKeys;
 
