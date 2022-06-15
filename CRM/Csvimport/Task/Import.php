@@ -230,6 +230,12 @@ class CRM_Csvimport_Task_Import {
 
     $valInfo = [];
     foreach ($params as $fieldName => $value) {
+      if (is_array($value) && count($value) == 1) {
+        $key = key($value);
+        if (strpos($key, 'api.') === 0 && strpos($key, '.get') === (strlen($key) - 4)) {
+          continue;
+        }
+      }
       if (in_array($fieldName, $opFields)) {
         $valInfo[$fieldName] = self::validateField($entity, $fieldName, $value, $ignoreCase);
       }
