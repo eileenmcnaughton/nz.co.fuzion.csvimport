@@ -12,14 +12,6 @@ function csvimport_civicrm_config(&$config) {
 }
 
 /**
- * Implementation of hook_civicrm_xmlMenu
- *
- * @param $files array(string)
- */
-function csvimport_civicrm_xmlMenu(&$files) {
-}
-
-/**
  * Implementation of hook_civicrm_install
  */
 function csvimport_civicrm_install() {
@@ -61,15 +53,6 @@ function csvimport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implementation of hook_civicrm_managed
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- */
-function csvimport_civicrm_managed(&$entities) {
-}
-
-/**
  * Implementation of hook_civicrm_navigationMenu
  *
  * Adds entries to the navigation menu
@@ -87,4 +70,13 @@ function csvimport_civicrm_navigationMenu(&$menu) {
   ];
   _csvimport_civix_insert_navigation_menu($menu, 'Administer', $item[0]);
   _csvimport_civix_navigationMenu($menu);
+}
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function csvimport_civicrm_postInstall() {
+  _csvimport_civix_civicrm_postInstall();
 }
