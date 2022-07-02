@@ -14,19 +14,20 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2022-06-03</releaseDate>
-  <version>1.8</version>
+  <releaseDate>2022-07-01</releaseDate>
+  <version>1.9</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.49</ver>
+    <ver>5.51</ver>
   </compatibility>
   <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
   </comments>
   <civix>
     <namespace>CRM/Csvimport</namespace>
-    <format>2.0</format>
+    <format>22.05.2</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
+    <mixin>scan-classes@1.0.0</mixin>
   </mixins>
 </extension>
