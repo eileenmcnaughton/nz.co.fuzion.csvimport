@@ -36,7 +36,7 @@
 /**
  * This class gets the name of the file to upload
  */
-class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_DataSourceBaseClass {
+class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
 
   public $_parser = 'CRM_Csvimport_Import_Parser_Api';
 
@@ -47,6 +47,47 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
 
   protected $_entity;
+
+  const IMPORT_ENTITY = 'Api Entity';
+
+  /**
+   * Get the name of the type to be stored in civicrm_user_job.type_id.
+   *
+   * @return string
+   */
+  public function getUserJobType(): string {
+    return 'csv_api_importer';
+  }
+
+  /**
+   * @return \CRM_Csvimport_Import_Parser_Api
+   */
+  protected function getParser(): CRM_Csvimport_Import_Parser_Api {
+    if (!$this->parser) {
+      $this->parser = new CRM_Csvimport_Import_Parser_Api();
+      $this->parser->setUserJobID($this->getUserJobID());
+      $this->parser->init();
+    }
+    return $this->parser;
+  }
+
+  /**
+   * Get the fields that can be submitted in the Import form flow.
+   *
+   * These could be on any form in the flow & are accessed the same way from
+   * all forms.
+   *
+   * @return string[]
+   */
+  protected function getSubmittableFields(): array {
+    $importerFields = [
+      'entity' => 'DataSource',
+      'noteEntity' => 'DataSource',
+      'ignoreCase' => 'DataSource',
+      'allowEntityUpdate' => 'DataSource',
+    ];
+    return array_merge(parent::getSubmittableFields(), $importerFields);
+  }
 
   /**
    * Include duplicate options
@@ -86,6 +127,87 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
       ->execute()[0]['options'];
 
     $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')]);
+    $config = CRM_Core_Config::singleton();
+
+    $uploadFileSize = CRM_Utils_Number::formatUnitSize($config->maxFileSize . 'm', TRUE);
+
+    //Fetch uploadFileSize from php_ini when $config->maxFileSize is set to "no limit".
+    if (empty($uploadFileSize)) {
+      $uploadFileSize = CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), TRUE);
+    }
+    $uploadSize = round(($uploadFileSize / (1024 * 1024)), 2);
+
+    $this->assign('uploadSize', $uploadSize);
+
+    $this->add('file', 'uploadFile', ts('Import Data File'), ['size' => 30, 'maxlength' => 255], TRUE);
+
+    $this->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
+    $this->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', [1 => $uploadSize, 2 => $uploadFileSize]), 'maxfilesize', $uploadFileSize);
+    $this->setMaxFileSize($uploadFileSize);
+    $this->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
+
+    $this->addElement('checkbox', 'skipColumnHeader', ts('First row contains column headers'));
+    if ($this->isDuplicateOptions) {
+      $duplicateOptions = [];
+      $duplicateOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Skip'), CRM_Import_Parser::DUPLICATE_SKIP
+      );
+      $duplicateOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Update'), CRM_Import_Parser::DUPLICATE_UPDATE
+      );
+      $duplicateOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('No Duplicate Checking'), CRM_Import_Parser::DUPLICATE_NOCHECK
+      );
+
+      $this->addGroup($duplicateOptions, 'onDuplicate',
+        ts('On Duplicate Entries')
+      );
+    }
+    //get the saved mapping details
+    $mappingArray = CRM_Core_BAO_Mapping::getMappings(
+      CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', $this->_mappingType)
+    );
+    $this->assign('savedMapping', $mappingArray);
+    $this->add('select', 'savedMapping', ts('Mapping Option'), ['' => ts('- select -')] + $mappingArray);
+
+    if ($loadedMapping = $this->get('loadedMapping')) {
+      $this->assign('loadedMapping', $loadedMapping);
+      $this->setDefaults(['savedMapping' => $loadedMapping]);
+    }
+
+    $this->setDefaults([
+      'onDuplicate' =>
+        CRM_Import_Parser::DUPLICATE_SKIP,
+    ]);
+
+    if ($this->_enableContactOptions) {
+      $this->addContactOptions();
+    }
+
+    $this->setDefaults([
+        'contactType' =>
+          CRM_Import_Parser::CONTACT_INDIVIDUAL,
+      ]
+    );
+    $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), ['size' => 2]);
+    $this->addElement('checkbox', 'allowEntityUpdate', ts('Allow Updating An Entity Using Unique Fields'));
+    $this->addElement('checkbox', 'ignoreCase', ts('Ignore Case For Field Option Values'));
+    //build date formats
+    CRM_Core_Form_Date::buildAllowedDateFormats($this);
+
+    $this->addButtons([
+        [
+          'type' => 'upload',
+          'name' => ts('Continue >>'),
+          'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+          'isDefault' => TRUE,
+        ],
+        [
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ],
+      ]
+    );
 
     parent::buildQuickForm();
   }
@@ -101,7 +223,73 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Csvimport_Import_Form_Dat
     //potentially we need to convert entity to full camel
     $defaults['entity'] = empty($entity) ? '' : ucfirst($entity);
     return $defaults;
-
   }
+
+  /**
+   * Function to set variables up before form is built
+   *
+   * @return void
+   * @access public
+   */
+  public function preProcess() {
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url($this->_userContext, 'reset=1'));
+  }
+
+  /**
+   * Process the uploaded file
+   *
+   * @return void
+   * @access public
+   */
+  public function postProcess() {
+    $dateFormats = $this->controller->exportValue($this->_name, 'dateFormats');
+    $entity = $this->controller->exportValue($this->_name, 'entity');
+    $allowEntityUpdate = $this->controller->exportValue($this->_name, 'allowEntityUpdate');
+    $ignoreCase = $this->controller->exportValue($this->_name, 'ignoreCase');
+    if ($entity == 'Note') {
+      $noteEntity = $this->controller->exportValue($this->_name, 'noteEntity');
+      $this->set('noteEntity', $noteEntity);
+    }
+
+    $this->controller->set('allowEntityUpdate', $allowEntityUpdate);
+    $this->controller->set('ignoreCase', $ignoreCase);
+
+    $session = CRM_Core_Session::singleton();
+    $session->set("dateTypes", $dateFormats);
+    parent::postProcess();
+  }
+
+  public function addContactOptions() {
+    //contact types option
+    $contactOptions = [];
+    if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Individual'), CRM_Import_Parser::CONTACT_INDIVIDUAL
+      );
+    }
+    if (CRM_Contact_BAO_ContactType::isActive('Household')) {
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Household'), CRM_Import_Parser::CONTACT_HOUSEHOLD
+      );
+    }
+    if (CRM_Contact_BAO_ContactType::isActive('Organization')) {
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Organization'), CRM_Import_Parser::CONTACT_ORGANIZATION
+      );
+    }
+    $this->addGroup($contactOptions, 'contactType', ts('Contact Type'));
+  }
+
+  /**
+   * Return a descriptive name for the page, used in wizard header
+   *
+   * @return string
+   * @access public
+   */
+  public function getTitle() {
+    return ts('Upload Data');
+  }
+
 }
 

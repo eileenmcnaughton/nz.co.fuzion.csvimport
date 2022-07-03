@@ -1,7 +1,39 @@
 <?php
 
-class CRM_Csvimport_Import_Form_Preview extends CRM_Csvimport_Import_Form_PreviewBaseClass {
+class CRM_Csvimport_Import_Form_Preview extends CRM_Import_Form_Preview  {
 
-  public $_parser = 'CRM_Csvimport_Import_Parser_Api';
+  /**
+   * Get the fields that can be submitted in the Import form flow.
+   *
+   * These could be on any form in the flow & are accessed the same way from
+   * all forms.
+   *
+   * @return string[]
+   */
+  protected function getSubmittableFields(): array {
+    $importerFields = [
+      'entity' => 'DataSource',
+      'noteEntity' => 'DataSource',
+      'ignoreCase' => 'DataSource',
+      'allowEntityUpdate' => 'DataSource',
+    ];
+    return array_merge(parent::getSubmittableFields(), $importerFields);
+  }
+
+  /**
+   * @return \CRM_Csvimport_Import_Parser_Api
+   */
+  protected function getParser(): CRM_Csvimport_Import_Parser_Api {
+    if (!$this->parser) {
+      $this->parser = new CRM_Csvimport_Import_Parser_Api();
+      $this->parser->setUserJobID($this->getUserJobID());
+      $this->parser->setEntity($this->getSubmittedValue('entity'));
+      $this->parser->setRefFields($this->controller->get('refFields'));
+      $this->parser->setAllowEntityUpdate($this->controller->get('allowEntityUpdate'));
+      $this->parser->setIgnoreCase($this->controller->get('ignoreCase'));
+      $this->parser->init();
+    }
+    return $this->parser;
+  }
 
 }
