@@ -97,7 +97,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
   /**
    * Function to actually build the form - this appears to be entirely code that should be in a shared base class in core
    *
-   * @return None
    * @access public
    */
   public function buildQuickForm() {
