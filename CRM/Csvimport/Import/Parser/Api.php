@@ -78,7 +78,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    *
    * @access public
    */
-  function import(array $values): void {
+  public function import(array $values): void {
     $rowNumber = (int) ($values[array_key_last($values)]);
     $entity = $this->getSubmittedValue('entity');
     try {
@@ -116,7 +116,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
           }
         }
 
-        if (count($uniqueField) == $fieldCount) {
+        if (count($uniqueField) === $fieldCount) {
           $tmp['sequential'] = 1;
           $tmp['return'] = ['id'];
           $existingEntity = civicrm_api3($this->getSubmittedValue('entity'), 'get', $tmp);
@@ -141,7 +141,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    *
    * @param string $entity
    */
-  public function setEntity($entity) {
+  public function setEntity(string $entity): void {
     $this->_entity = $entity;
   }
 
@@ -150,35 +150,34 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    *
    * @param array $value
    */
-  public function setRefFields($value): void {
+  public function setRefFields(array $value): void {
     $this->_refFields = $value;
   }
 
   /**
    * Set if entities can be updated using unique fields
    *
-   * @param $size
+   * @param bool $update
    */
-  public function setAllowEntityUpdate($update) {
+  public function setAllowEntityUpdate(bool $update): void {
     $this->_allowEntityUpdate = $update;
   }
 
   /**
    * Set if letter-case needs to be ignored for field option values
    *
-   * @param $size
+   * @param bool $ignoreCase
    */
-  function setIgnoreCase($ignoreCase) {
+  public function setIgnoreCase(bool $ignoreCase): void {
     $this->_ignoreCase = $ignoreCase;
   }
 
   /**
    * the initializer code, called before the processing
    *
-   * @return void
-   * @access public
+   * @throws \CiviCRM_API3_Exception
    */
-  function init() {
+  public function init(): void {
     $this->setEntity($this->getSubmittedValue('entity'));
     $this->setFieldMetadata();
   }
