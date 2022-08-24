@@ -126,26 +126,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
       ->execute()[0]['options'];
 
     $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')]);
-    $config = CRM_Core_Config::singleton();
-
-    $uploadFileSize = CRM_Utils_Number::formatUnitSize($config->maxFileSize . 'm', TRUE);
-
-    //Fetch uploadFileSize from php_ini when $config->maxFileSize is set to "no limit".
-    if (empty($uploadFileSize)) {
-      $uploadFileSize = CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), TRUE);
-    }
-    $uploadSize = round(($uploadFileSize / (1024 * 1024)), 2);
-
-    $this->assign('uploadSize', $uploadSize);
-
-    $this->add('file', 'uploadFile', ts('Import Data File'), ['size' => 30, 'maxlength' => 255], TRUE);
-
-    $this->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
-    $this->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', [1 => $uploadSize, 2 => $uploadFileSize]), 'maxfilesize', $uploadFileSize);
-    $this->setMaxFileSize($uploadFileSize);
-    $this->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
-
-    $this->addElement('checkbox', 'skipColumnHeader', ts('First row contains column headers'));
     if ($this->isDuplicateOptions) {
       $duplicateOptions = [];
       $duplicateOptions[] = $this->createElement('radio',
@@ -162,17 +142,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
         ts('On Duplicate Entries')
       );
     }
-    //get the saved mapping details
-    $mappingArray = CRM_Core_BAO_Mapping::getMappings(
-      CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', $this->_mappingType)
-    );
-    $this->assign('savedMapping', $mappingArray);
-    $this->add('select', 'savedMapping', ts('Mapping Option'), ['' => ts('- select -')] + $mappingArray);
-
-    if ($loadedMapping = $this->get('loadedMapping')) {
-      $this->assign('loadedMapping', $loadedMapping);
-      $this->setDefaults(['savedMapping' => $loadedMapping]);
-    }
 
     $this->setDefaults([
       'onDuplicate' =>
@@ -188,27 +157,18 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
           CRM_Import_Parser::CONTACT_INDIVIDUAL,
       ]
     );
-    $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), ['size' => 2]);
     $this->addElement('checkbox', 'allowEntityUpdate', ts('Allow Updating An Entity Using Unique Fields'));
     $this->addElement('checkbox', 'ignoreCase', ts('Ignore Case For Field Option Values'));
-    //build date formats
-    CRM_Core_Form_Date::buildAllowedDateFormats($this);
-
-    $this->addButtons([
-        [
-          'type' => 'upload',
-          'name' => ts('Continue >>'),
-          'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-          'isDefault' => TRUE,
-        ],
-        [
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ],
-      ]
-    );
 
     parent::buildQuickForm();
+
+    $this->removeElement('savedMapping');
+    //get the saved mapping details
+    $mappingArray = CRM_Core_BAO_Mapping::getMappings(
+      CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', $this->_mappingType)
+    );
+    $this->assign('savedMapping', $mappingArray);
+    $this->add('select', 'savedMapping', ts('Mapping Option'), ['' => ts('- select -')] + $mappingArray);
   }
 
   /**
