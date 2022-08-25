@@ -215,14 +215,14 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
   public function buildQuickForm() {
 
     //to save the current mappings
-    if (!$this->get('savedMapping')) {
+    if (!$this->getSubmittedValue('savedMapping')) {
       $saveDetailsName = ts('Save this field mapping');
       $this->applyFilter('saveMappingName', 'trim');
       $this->add('text', 'saveMappingName', ts('Name'));
       $this->add('text', 'saveMappingDesc', ts('Description'));
     }
     else {
-      $savedMapping = $this->get('savedMapping');
+      $savedMapping = $this->getSubmittedValue('savedMapping');
 
       list($mappingName) = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
 
@@ -277,16 +277,11 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     for ($i = 0; $i < $this->_columnCount; $i++) {
       $sel = &$this->addElement('hierselect', "mapper[$i]", ts('Mapper for Field %1', [1 => $i]), NULL);
       $jsSet = FALSE;
-      if ($this->get('savedMapping')) {
+      if ($this->getSubmittedValue('savedMapping')) {
         if (isset($mappingName[$i])) {
-          if ($mappingName[$i] != ts('- do not import -')) {
-
-            $mappingHeader = array_keys($this->_mapperFields, $mappingName[$i]);
-
+          if ($mappingName[$i] != 'do_not_import') {
             $js .= "{$formName}['mapper[$i][3]'].style.display = 'none';\n";
-            $defaults["mapper[$i]"] = [
-              $mappingHeader[0]
-            ];
+            $defaults["mapper[$i]"] = [$mappingName[$i]];
             $jsSet = TRUE;
           }
           else {
