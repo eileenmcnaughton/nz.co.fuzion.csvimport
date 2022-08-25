@@ -169,6 +169,10 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     );
     $this->assign('savedMapping', $mappingArray);
     $this->add('select', 'savedMapping', ts('Mapping Option'), ['' => ts('- select -')] + $mappingArray);
+
+    if ($loadedMapping = $this->get('loadedMapping')) {
+      $this->setDefaults(['savedMapping' => $loadedMapping]);
+    }
   }
 
   /**
