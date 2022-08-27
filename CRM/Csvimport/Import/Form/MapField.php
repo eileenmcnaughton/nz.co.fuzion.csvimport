@@ -350,7 +350,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    *
    * @return string
    */
-  public function defaultFromHeader($header, &$patterns) {
+  public function defaultFromHeader($header, $patterns) {
     return '';
   }
 
