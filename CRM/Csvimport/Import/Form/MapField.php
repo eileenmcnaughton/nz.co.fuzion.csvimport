@@ -259,7 +259,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     $defaults = [];
     $mapperKeys = array_keys($this->_mapperFields);
     $hasHeaders = !empty($this->_columnHeaders);
-    $headerPatterns = $this->get('headerPatterns');
 
 
     /* Initialize all field usages to false */
@@ -298,7 +297,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
           $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_" . $i . "_');\n";
 
           if ($hasHeaders) {
-            $defaults["mapper[$i]"] = [$this->defaultFromHeader($this->_columnHeaders[$i], $headerPatterns)];
+            $defaults["mapper[$i]"] = [''];
           }
         }
         //end of load mapping
@@ -307,13 +306,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
         $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_" . $i . "_');\n";
         if ($hasHeaders) {
           // Infer the default from the skipped headers if we have them
-          $defaults["mapper[$i]"] = [
-            $this->defaultFromHeader($this->_columnHeaders[$i],
-              $headerPatterns
-            ),
-            //                     $defaultLocationType->id
-            0,
-          ];
+          $defaults["mapper[$i]"] = [''];
         }
       }
       $sel->setOptions([$sel1]);
@@ -340,30 +333,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
         ],
       ]
     );
-  }
-
-  /**
-   * Attempt to match header labels with our mapper fields.
-   *
-   * @param string $header
-   * @param array $patterns
-   *
-   * @return string
-   */
-  public function defaultFromHeader($header, $patterns) {
-    return '';
-  }
-
-  /**
-   * Guess at the field names given the data and patterns from the schema.
-   *
-   * @param array $patterns
-   * @param string $index
-   *
-   * @return string
-   */
-  public function defaultFromData($patterns, $index) {
-    return '';
   }
 
   /**
