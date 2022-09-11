@@ -38,6 +38,7 @@ use Civi\Api4\Note;
  */
 class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
 
+  use CRM_Csvimport_Import_Form_CSVImportFormTrait;
   public $_parser = 'CRM_Csvimport_Import_Parser_Api';
 
   protected $_enableContactOptions = FALSE;
@@ -45,8 +46,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
   protected $_userContext = 'civicrm/csvimporter/import';
 
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
-
-  protected $_entity;
 
   const IMPORT_ENTITY = 'Api Entity';
 
@@ -72,24 +71,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
   }
 
   /**
-   * Get the fields that can be submitted in the Import form flow.
-   *
-   * These could be on any form in the flow & are accessed the same way from
-   * all forms.
-   *
-   * @return string[]
-   */
-  protected function getSubmittableFields(): array {
-    $importerFields = [
-      'entity' => 'DataSource',
-      'noteEntity' => 'DataSource',
-      'ignoreCase' => 'DataSource',
-      'allowEntityUpdate' => 'DataSource',
-    ];
-    return array_merge(parent::getSubmittableFields(), $importerFields);
-  }
-
-  /**
    * Include duplicate options
    */
   protected $isDuplicateOptions = FALSE;
@@ -97,9 +78,9 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
   /**
    * Function to actually build the form - this appears to be entirely code that should be in a shared base class in core
    *
-   * @access public
+   * @throws \CRM_Core_Exception
    */
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     //We are gathering this as a text field for now. I tried to put it into the URL but for some reason
     //adding &x=y in the url causes it not to load at all.
     $allEntities = civicrm_api3('entity', 'get', []);
