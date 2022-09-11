@@ -122,49 +122,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     }
 
     // Add new fields
-    $refFields = [];
-    foreach ($uniqueFields as $entityName => $entity) {
-      foreach ($entity as $refKey => $entityRefFields) {
-        foreach ($entityRefFields as $indexCols) {
-          // skip if field name is 'id' as it would be available by default
-          if (count($indexCols) == 1 && $indexCols[0] == 'id') {
-            continue;
-          }
-
-          if (count($indexCols) == 1) {
-            $k = $indexCols[0];
-            if (isset($this->_mapperFields[$refKey])) {
-              $label = $this->_mapperFields[$refKey];
-              $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
-            }
-            else {
-              $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
-            }
-            $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
-          }
-          else {
-            if (count($indexCols) > 1) {
-              // handle combination indexes
-              if ($this->_mapperFields[$refKey]) {
-                $label = $this->_mapperFields[$refKey];
-              }
-              else {
-                $label = $refKey;
-              }
-              $indexKey = '';
-              foreach ($indexCols as $col) {
-                $indexKey .= '#' . $col;
-              }
-              foreach ($indexCols as $key => $col) {
-                $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
-                $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols) + ['active' => $col]);
-              }
-            }
-          }
-        }
-      }
-    }
-    $this->controller->set('refFields', $refFields);
+    $this->controller->set('refFields', $this->getReferenceFields($uniqueFields));
     asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
   }
@@ -206,7 +164,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     else {
       $savedMapping = $this->getSubmittedValue('savedMapping');
 
-      list($mappingName) = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
+      [$mappingName] = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
 
       $mappingName = $mappingName[1];
       //mapping is to be loaded from database
@@ -372,6 +330,57 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    */
   public function getMappingTypeName(): string {
     return $this->_mappingType;
+  }
+
+  /**
+   * @param array $uniqueFields
+   *
+   * @return array
+   */
+  protected function getReferenceFields(array $uniqueFields): array {
+    $refFields = [];
+    foreach ($uniqueFields as $entityName => $entity) {
+      foreach ($entity as $refKey => $entityRefFields) {
+        foreach ($entityRefFields as $indexCols) {
+          // skip if field name is 'id' as it would be available by default
+          if (count($indexCols) == 1 && $indexCols[0] === 'id') {
+            continue;
+          }
+
+          if (count($indexCols) == 1) {
+            $k = $indexCols[0];
+            if (isset($this->_mapperFields[$refKey])) {
+              $label = $this->_mapperFields[$refKey];
+              $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
+            }
+            else {
+              $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
+            }
+            $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
+          }
+          else {
+            if (count($indexCols) > 1) {
+              // handle combination indexes
+              if ($this->_mapperFields[$refKey]) {
+                $label = $this->_mapperFields[$refKey];
+              }
+              else {
+                $label = $refKey;
+              }
+              $indexKey = '';
+              foreach ($indexCols as $col) {
+                $indexKey .= '#' . $col;
+              }
+              foreach ($indexCols as $key => $col) {
+                $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
+                $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols) + ['active' => $col]);
+              }
+            }
+          }
+        }
+      }
+    }
+    return $refFields;
   }
 
 }
