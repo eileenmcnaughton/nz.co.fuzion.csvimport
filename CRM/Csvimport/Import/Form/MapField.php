@@ -83,7 +83,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
 
     // find all reference fields for this entity
     $params = [];
-    if ($noteEntity = $this->get('noteEntity')) {
+    if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
       $params[$this->get('entity')] = $noteEntity;
       unset($this->_mapperFields['entity_table']);
     }

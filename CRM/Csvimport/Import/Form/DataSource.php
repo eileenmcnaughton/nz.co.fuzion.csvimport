@@ -125,7 +125,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
       ->addWhere('name', '=', 'entity_table')
       ->execute()[0]['options'];
 
-    $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')]);
+    $this->add('select', 'noteEntity', ts('Which entity are you importing "Notes" to'), $noteEntities + ['0' => ts('Set this in CSV')], FALSE, ['class' => 'crm-select2']);
     if ($this->isDuplicateOptions) {
       $duplicateOptions = [];
       $duplicateOptions[] = $this->createElement('radio',
@@ -210,10 +210,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     $entity = $this->controller->exportValue($this->_name, 'entity');
     $allowEntityUpdate = $this->controller->exportValue($this->_name, 'allowEntityUpdate');
     $ignoreCase = $this->controller->exportValue($this->_name, 'ignoreCase');
-    if ($entity == 'Note') {
-      $noteEntity = $this->controller->exportValue($this->_name, 'noteEntity');
-      $this->set('noteEntity', $noteEntity);
-    }
 
     $this->controller->set('allowEntityUpdate', $allowEntityUpdate);
     $this->controller->set('ignoreCase', $ignoreCase);
