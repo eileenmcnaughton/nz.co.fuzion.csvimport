@@ -116,7 +116,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
         // Ignore entities that raise an exception
       }
     }
-    $this->add('select', 'entity', ts('Entity To Import'), ['' => ts('- select -')] + $creatableEntities);
+    $this->add('select', 'entity', ts('Entity To Import'), ['' => ts('- select -')] + $creatableEntities, TRUE, ['class' => 'crm-select2']);
 
     // handle 'Note' entity
     $noteEntities = Note::getFields()
