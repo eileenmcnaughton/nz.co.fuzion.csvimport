@@ -180,26 +180,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     $session->pushUserContext(CRM_Utils_System::url($this->_userContext, 'reset=1'));
   }
 
-  /**
-   * Process the uploaded file
-   *
-   * @return void
-   * @access public
-   */
-  public function postProcess() {
-    $dateFormats = $this->controller->exportValue($this->_name, 'dateFormats');
-    $entity = $this->controller->exportValue($this->_name, 'entity');
-    $allowEntityUpdate = $this->controller->exportValue($this->_name, 'allowEntityUpdate');
-    $ignoreCase = $this->controller->exportValue($this->_name, 'ignoreCase');
-
-    $this->controller->set('allowEntityUpdate', $allowEntityUpdate);
-    $this->controller->set('ignoreCase', $ignoreCase);
-
-    $session = CRM_Core_Session::singleton();
-    $session->set("dateTypes", $dateFormats);
-    parent::postProcess();
-  }
-
   public function addContactOptions() {
     //contact types option
     $contactOptions = [];

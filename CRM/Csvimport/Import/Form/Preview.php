@@ -13,8 +13,8 @@ class CRM_Csvimport_Import_Form_Preview extends CRM_Import_Form_Preview  {
       $this->parser->setUserJobID($this->getUserJobID());
       $this->parser->setEntity($this->getSubmittedValue('entity'));
       $this->parser->setRefFields($this->controller->get('refFields'));
-      $this->parser->setAllowEntityUpdate($this->controller->get('allowEntityUpdate'));
-      $this->parser->setIgnoreCase($this->controller->get('ignoreCase'));
+      $this->parser->setAllowEntityUpdate($this->getSubmittedValue('allowEntityUpdate'));
+      $this->parser->setIgnoreCase($this->getSubmittedValue('ignoreCase'));
       $this->parser->init();
     }
     return $this->parser;
