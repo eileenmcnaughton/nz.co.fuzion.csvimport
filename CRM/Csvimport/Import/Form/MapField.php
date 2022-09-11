@@ -342,7 +342,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
       $params[$this->getSubmittedValue('entity')] = $noteEntity;
     }
-    $refFields = $this->controller->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
+    $refFields = $this->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
 
     // get all unique fields for above entities
     $uniqueFields = [];
