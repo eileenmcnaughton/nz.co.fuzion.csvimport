@@ -78,7 +78,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    */
   public function preProcess() {
     parent::preProcess();
-    $this->_onDuplicate = $this->get('onDuplicate');
 
     $this->doDuplicateOptionHandling();
 
@@ -191,7 +190,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    * Here we add or remove fields based on the selected duplicate option
    */
   function doDuplicateOptionHandling() {
-    if ($this->_onDuplicate == CRM_Import_Parser::DUPLICATE_UPDATE) {
+    if ($this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_UPDATE) {
       foreach ($this->_onDuplicateUpdateRemove as $value) {
         unset($this->_mapperFields[$value]);
       }
@@ -199,8 +198,8 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
         $this->_highlightedFields[] = $name;
       }
     }
-    elseif ($this->_onDuplicate == CRM_Import_Parser::DUPLICATE_SKIP ||
-      $this->_onDuplicate == CRM_Import_Parser::DUPLICATE_NOCHECK
+    elseif ($this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_SKIP ||
+      $this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_NOCHECK
     ) {
       $this->_highlightedFields = $this->_highlightedFields + $this->_onDuplicateUpdateHighlight;
     }
