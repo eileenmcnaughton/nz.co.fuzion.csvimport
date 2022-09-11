@@ -71,10 +71,12 @@
           </span>
         </td>
       </tr>
-      <tr class="crm-api-import-uploadfile-form-block-onDuplicate">
-        <td class="label">{$form.onDuplicate.label}</td>
-        <td>{$form.onDuplicate.html}</td>
-      </tr>
+      {if array_key_exists('onDuplicate', $form)}
+        <tr class="crm-api-import-uploadfile-form-block-onDuplicate">
+          <td class="label">{$form.onDuplicate.label}</td>
+          <td>{$form.onDuplicate.html}</td>
+        </tr>
+      {/if}
       <tr class="crm-import-datasource-form-block-fieldSeparator">
         <td class="label">{$form.fieldSeparator.label}</td>
         <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
