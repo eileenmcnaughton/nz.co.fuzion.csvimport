@@ -32,21 +32,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
   protected $_onDuplicateSkipHighlight = [];
 
   /**
-   * @return \CRM_Csvimport_Import_Parser_Api
-   */
-  protected function getParser(): CRM_Csvimport_Import_Parser_Api {
-    if (!$this->parser) {
-      $this->parser = new CRM_Csvimport_Import_Parser_Api();
-      $this->parser->setUserJobID($this->getUserJobID());
-      $this->parser->setEntity($this->getSubmittedValue('entity'));
-      $this->parser->setRefFields($this->controller->get('refFields'));
-
-      $this->parser->init();
-    }
-    return $this->parser;
-  }
-
-  /**
    * entity being imported to
    *
    * @var string
@@ -70,8 +55,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
       unset($this->_mapperFields['entity_table']);
     }
 
-    // Add new fields
-    $this->controller->set('refFields', $this->getReferenceFields($this->getUniqueFields()));
     asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
   }
@@ -279,120 +262,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    */
   public function getMappingTypeName(): string {
     return $this->_mappingType;
-  }
-
-  /**
-   * @param array $uniqueFields
-   *
-   * @return array
-   */
-  protected function getReferenceFields(array $uniqueFields): array {
-    $refFields = [];
-    foreach ($uniqueFields as $entityName => $entity) {
-      foreach ($entity as $refKey => $entityRefFields) {
-        foreach ($entityRefFields as $indexCols) {
-          // skip if field name is 'id' as it would be available by default
-          if (count($indexCols) == 1 && $indexCols[0] === 'id') {
-            continue;
-          }
-
-          if (count($indexCols) == 1) {
-            $k = $indexCols[0];
-            if (isset($this->_mapperFields[$refKey])) {
-              $label = $this->_mapperFields[$refKey];
-              $this->_mapperFields[$refKey . '#' . $k] = $label . ' (' . ts('Match using') . ' ' . $k . ')';
-            }
-            else {
-              $this->_mapperFields[$refKey . '#' . $k] = $refKey . ' (' . ts('Match using') . ' ' . $k . ')';
-            }
-            $refFields[$refKey . '#' . $k] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $k], $entityName, $k);
-          }
-          else {
-            if (count($indexCols) > 1) {
-              // handle combination indexes
-              if ($this->_mapperFields[$refKey]) {
-                $label = $this->_mapperFields[$refKey];
-              }
-              else {
-                $label = $refKey;
-              }
-              $indexKey = '';
-              foreach ($indexCols as $col) {
-                $indexKey .= '#' . $col;
-              }
-              foreach ($indexCols as $key => $col) {
-                $this->_mapperFields[$refKey . '#' . $col] = $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')';
-                $refFields[$refKey . '#' . $col] = new CRM_Csvimport_Import_ReferenceField($refKey, $this->_mapperFields[$refKey . '#' . $col], $entityName, array_values($indexCols) + ['active' => $col]);
-              }
-            }
-          }
-        }
-      }
-    }
-    return $refFields;
-  }
-
-  /**
-   * @param array $params
-   *
-   * @return array
-   */
-  protected function getUniqueFields(): array {
-    $params = [];
-    if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
-      $params[$this->getSubmittedValue('entity')] = $noteEntity;
-    }
-    $refFields = $this->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
-
-    // get all unique fields for above entities
-    $uniqueFields = [];
-    foreach ($refFields as $k => $rfield) {
-      // handle reference fields in custom fields (only contacts for now)
-      if ($k == 'custom_fields') {
-        foreach ($rfield as $each) {
-          switch ($each['data_type']) {
-            case 'ContactReference':
-              try {
-                $uf = civicrm_api3('Contact', 'getunique', [])['values'];
-              }
-              catch (CiviCRM_API3_Exception $e) {
-                if ($e->getErrorCode() == 'not-found') {
-                  // fallback method for versions < 5.2
-                  $uf = $this->controller->findAllUniqueFields('Contact');
-                }
-              }
-              $uniqueFields['Contact'][$each['name']] = $uf;
-              break;
-          }
-        }
-      }
-      else {
-        try {
-          $uf = civicrm_api3($rfield['entity'], 'getunique', [])['values'];
-        }
-        catch (CiviCRM_API3_Exception $e) {
-          if ($e->getErrorCode() == 'not-found') {
-            // fallback method for versions < 5.2
-            $uf = $this->controller->findAllUniqueFields($rfield['entity']);
-          }
-        }
-        $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
-        $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
-        if ($extraFields) {
-          foreach ($extraFields as $k => $extraField) {
-            if (is_array($extraField)) {
-              foreach ($extraField as $each) {
-                $uniqueFields[$rfield['entity']][$k][] = [$each];
-              }
-            }
-            else {
-              $uniqueFields[$rfield['entity']][$k][] = [$extraField];
-            }
-          }
-        }
-      }
-    }
-    return $uniqueFields;
   }
 
 }

@@ -2,24 +2,6 @@
 
 class CRM_Csvimport_Import_Controller extends CRM_Core_Controller {
 
-  public static $specialCaseFields = [
-    'MembershipType' => [
-      'membership_type_id' => 'name',
-    ],
-    'Address' => [
-      'master_id' => [
-        'contact_id',
-        'external_identifier', // special case; handled in import task
-      ],
-    ],
-    'County' => [
-      'county_id' => 'name',
-    ],
-    'StateProvince' => [
-      'state_province_id' => 'name',
-    ],
-  ];
-
   /**
    * class constructor
    */
@@ -41,34 +23,4 @@ class CRM_Csvimport_Import_Controller extends CRM_Core_Controller {
     $this->addActions($config->uploadDir, ['uploadFile']);
   }
 
-  function getSpecialCaseFields($entity) {
-    if (isset(self::$specialCaseFields[$entity])) {
-      return self::$specialCaseFields[$entity];
-    }
-    return NULL;
-  }
-
-  /**
-   * Returns all unique fields of given entity
-   * (this is added to core as an api 'getuique' but not available in a stable release)
-   *
-   * @param $entity
-   *
-   * @return array
-   */
-  public static function findAllUniqueFields($entity) {
-    $uniqueFields = [];
-
-    $dao = _civicrm_api3_get_DAO($entity);
-    $uFields = $dao::indices();
-
-    foreach ($uFields as $fieldKey => $field) {
-      if (!isset($field['unique']) || !$field['unique']) {
-        continue;
-      }
-      $uniqueFields[$fieldKey] = $field['field'];
-    }
-
-    return $uniqueFields;
-  }
 }

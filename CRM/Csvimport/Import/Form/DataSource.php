@@ -59,18 +59,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
   }
 
   /**
-   * @return \CRM_Csvimport_Import_Parser_Api
-   */
-  protected function getParser(): CRM_Csvimport_Import_Parser_Api {
-    if (!$this->parser) {
-      $this->parser = new CRM_Csvimport_Import_Parser_Api();
-      $this->parser->setUserJobID($this->getUserJobID());
-      $this->parser->init();
-    }
-    return $this->parser;
-  }
-
-  /**
    * Include duplicate options
    */
   protected $isDuplicateOptions = FALSE;
