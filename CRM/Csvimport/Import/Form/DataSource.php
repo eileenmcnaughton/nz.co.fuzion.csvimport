@@ -29,9 +29,9 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
  */
+
+use Civi\Api4\Note;
 
 /**
  * This class gets the name of the file to upload
@@ -119,7 +119,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     $this->add('select', 'entity', ts('Entity To Import'), ['' => ts('- select -')] + $creatableEntities);
 
     // handle 'Note' entity
-    $noteEntities = \Civi\Api4\Note::getFields()
+    $noteEntities = Note::getFields()
       ->setLoadOptions(TRUE)
       ->addSelect('options')
       ->addWhere('name', '=', 'entity_table')
