@@ -65,64 +65,13 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     $this->doDuplicateOptionHandling();
 
     // find all reference fields for this entity
-    $params = [];
-    if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
-      $params[$this->getSubmittedValue('entity')] = $noteEntity;
+    if ($this->getSubmittedValue('noteEntity')) {
+      // why??
       unset($this->_mapperFields['entity_table']);
-    }
-    $refFields = $this->controller->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
-
-    // get all unique fields for above entities
-    $uniqueFields = [];
-    foreach ($refFields as $k => $rfield) {
-      // handle reference fields in custom fields (only contacts for now)
-      if ($k == 'custom_fields') {
-        foreach ($rfield as $each) {
-          switch ($each['data_type']) {
-            case 'ContactReference':
-              try {
-                $uf = civicrm_api3('Contact', 'getunique', [])['values'];
-              }
-              catch (CiviCRM_API3_Exception $e) {
-                if ($e->getErrorCode() == 'not-found') {
-                  // fallback method for versions < 5.2
-                  $uf = $this->controller->findAllUniqueFields('Contact');
-                }
-              }
-              $uniqueFields['Contact'][$each['name']] = $uf;
-              break;
-          }
-        }
-      }
-      else {
-        try {
-          $uf = civicrm_api3($rfield['entity'], 'getunique', [])['values'];
-        }
-        catch (CiviCRM_API3_Exception $e) {
-          if ($e->getErrorCode() == 'not-found') {
-            // fallback method for versions < 5.2
-            $uf = $this->controller->findAllUniqueFields($rfield['entity']);
-          }
-        }
-        $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
-        $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
-        if ($extraFields) {
-          foreach ($extraFields as $k => $extraField) {
-            if (is_array($extraField)) {
-              foreach ($extraField as $each) {
-                $uniqueFields[$rfield['entity']][$k][] = [$each];
-              }
-            }
-            else {
-              $uniqueFields[$rfield['entity']][$k][] = [$extraField];
-            }
-          }
-        }
-      }
     }
 
     // Add new fields
-    $this->controller->set('refFields', $this->getReferenceFields($uniqueFields));
+    $this->controller->set('refFields', $this->getReferenceFields($this->getUniqueFields()));
     asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
   }
@@ -381,6 +330,69 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
       }
     }
     return $refFields;
+  }
+
+  /**
+   * @param array $params
+   *
+   * @return array
+   */
+  protected function getUniqueFields(): array {
+    $params = [];
+    if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
+      $params[$this->getSubmittedValue('entity')] = $noteEntity;
+    }
+    $refFields = $this->controller->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
+
+    // get all unique fields for above entities
+    $uniqueFields = [];
+    foreach ($refFields as $k => $rfield) {
+      // handle reference fields in custom fields (only contacts for now)
+      if ($k == 'custom_fields') {
+        foreach ($rfield as $each) {
+          switch ($each['data_type']) {
+            case 'ContactReference':
+              try {
+                $uf = civicrm_api3('Contact', 'getunique', [])['values'];
+              }
+              catch (CiviCRM_API3_Exception $e) {
+                if ($e->getErrorCode() == 'not-found') {
+                  // fallback method for versions < 5.2
+                  $uf = $this->controller->findAllUniqueFields('Contact');
+                }
+              }
+              $uniqueFields['Contact'][$each['name']] = $uf;
+              break;
+          }
+        }
+      }
+      else {
+        try {
+          $uf = civicrm_api3($rfield['entity'], 'getunique', [])['values'];
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          if ($e->getErrorCode() == 'not-found') {
+            // fallback method for versions < 5.2
+            $uf = $this->controller->findAllUniqueFields($rfield['entity']);
+          }
+        }
+        $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
+        $extraFields = $this->controller->getSpecialCaseFields($rfield['entity']);
+        if ($extraFields) {
+          foreach ($extraFields as $k => $extraField) {
+            if (is_array($extraField)) {
+              foreach ($extraField as $each) {
+                $uniqueFields[$rfield['entity']][$k][] = [$each];
+              }
+            }
+            else {
+              $uniqueFields[$rfield['entity']][$k][] = [$extraField];
+            }
+          }
+        }
+      }
+    }
+    return $uniqueFields;
   }
 
 }
