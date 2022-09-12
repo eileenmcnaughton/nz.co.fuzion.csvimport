@@ -14,8 +14,8 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2022-07-01</releaseDate>
-  <version>1.9</version>
+  <releaseDate>2022-09-13</releaseDate>
+  <version>1.10</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.51</ver>
