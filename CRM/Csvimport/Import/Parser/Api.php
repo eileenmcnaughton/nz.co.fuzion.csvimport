@@ -123,6 +123,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
                   'referenced_field' => $referenceField,
                   'entity_name' => $entityName,
                   'entity_field_name' => $indexFieldName,
+                  'name' => $referenceField . '#' . $indexFieldName,
                 ]
               );
               $indexFieldMetadata['html']['label'] = $indexFieldMetadata['title'] . ' (' . ts('Match using') . ' ' . $indexFieldName . ')';
@@ -291,22 +292,19 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     $entity = $this->getSubmittedValue('entity');
     try {
       $params = $this->getMappedRow($values);
-      $params['skipRecentView'] = TRUE;
-      $params['check_permissions'] = TRUE;
-      foreach ($params as $key => $param) {
-        if (strpos($key, 'api.') === 0 && strpos($key, '.get') === (strlen($key) - 4)) {
-          $refEntity = substr($key, 4, -4);
+      foreach ($params as $key => $value) {
+        $fieldMetadata = $this->getFieldMetadata($key);
+        if ($fieldMetadata['referenced_field'] ?? NULL) {
+          $refEntity = $fieldMetadata['entity_name'];
           // special case: handle 'Master Address Belongs To' field using contact external_id
-          if ($refEntity === 'Address' && isset($param[$key]['external_identifier'])) {
+          if ($refEntity === 'Address' && isset($value[$key]['external_identifier'])) {
             $refEntity = 'Contact';
           }
           try {
-            $data = civicrm_api3($refEntity, 'get', $param[$key]);
-            $param[$key]['contact_id'] = $data['values'][0]['id'];
-            unset($param[$key]['external_identifier']);
+            $params['contact_id'] = (int) civicrm_api3($refEntity, 'getsingle', [$fieldMetadata['entity_field_name'] => $value])['id'];
           }
           catch (CiviCRM_API3_Exception $e) {
-            throw new CRM_Core_Exception('Error with referenced entity "get"! (' . $e->getMessage() . ')');
+            throw new CRM_Core_Exception('Failed to find referenced entity');
           }
         }
       }
@@ -334,7 +332,8 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
           }
         }
       }
-
+      $params['skipRecentView'] = TRUE;
+      $params['check_permissions'] = TRUE;
       $result = civicrm_api3($entity, 'create', $params);
     }
     catch (Exception $e) {
