@@ -22,6 +22,9 @@
   </compatibility>
   <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
   </comments>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
   <civix>
     <namespace>CRM/Csvimport</namespace>
     <format>22.05.2</format>
