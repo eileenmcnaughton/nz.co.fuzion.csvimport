@@ -13,8 +13,6 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    */
   protected $_params = [];
 
-  protected $_refFields = [];
-
   protected $_allowEntityUpdate = FALSE;
 
   protected $_ignoreCase = FALSE;
@@ -48,12 +46,222 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
         $this->importableFieldsMetadata[$field]['title'] = $values["groupTitle"] . ': ' . $values["title"];
       }
     }
-    foreach ($this->_refFields ?? [] as $field => $values) {
-      if (isset($this->importableFieldsMetadata[$values->id])) {
-        $this->importableFieldsMetadata[$field] = $this->importableFieldsMetadata[$values->id];
-        $this->importableFieldsMetadata[$values->id]['_refField'] = $values->entity_field_name;
+    foreach ($this->getReferenceFields() ?? [] as $field => $values) {
+      $fieldName = $values['referenced_field'];
+      if (isset($this->importableFieldsMetadata[$values['referenced_field']])) {
+        $this->importableFieldsMetadata[$field] = array_merge($this->importableFieldsMetadata[$fieldName], $values);
       }
     }
+  }
+
+  /**
+   *
+   * @return array
+   */
+  public function getUniqueFields(): array {
+    $params = [];
+    if ($noteEntity = $this->getSubmittedValue('noteEntity')) {
+      $params[$this->getSubmittedValue('entity')] = $noteEntity;
+    }
+    $refFields = $this->findAllReferenceFields($this->getSubmittedValue('entity'), $params);
+
+    // get all unique fields for above entities
+    $uniqueFields = [];
+    foreach ($refFields as $k => $rfield) {
+      // handle reference fields in custom fields (only contacts for now)
+      if ($k === 'custom_fields') {
+        foreach ($rfield as $each) {
+          if ($each['data_type'] === 'ContactReference') {
+            $uniqueFields['Contact'][$each['name']] = civicrm_api3('Contact', 'getunique', [])['values'];
+          }
+        }
+      }
+      else {
+        $uf = civicrm_api3($rfield['entity'], 'getunique', [])['values'];
+
+        $uniqueFields[$rfield['entity']][$rfield['name']] = $uf;
+        $extraFields = $this->getSpecialCaseFields($rfield['entity']);
+        if ($extraFields) {
+          foreach ($extraFields as $k => $extraField) {
+            if (is_array($extraField)) {
+              foreach ($extraField as $each) {
+                $uniqueFields[$rfield['entity']][$k][] = [$each];
+              }
+            }
+            else {
+              $uniqueFields[$rfield['entity']][$k][] = [$extraField];
+            }
+          }
+        }
+      }
+    }
+    return $uniqueFields;
+  }
+
+  /**
+   *
+   * @return array
+   */
+  protected function getReferenceFields(): array {
+    $refFields = [];
+    foreach ($this->getUniqueFields() as $entityName => $entity) {
+      foreach ($entity as $referenceField => $entityRefFields) {
+        try {
+          $entityFieldMetadata = civicrm_api4($entityName, 'getfields', [], 'name');
+
+          foreach ($entityRefFields as $fieldsInUniqueIndex) {
+            // skip if field name is 'id' as it would be available by default
+            if ($fieldsInUniqueIndex === ['id']) {
+              continue;
+            }
+
+            if (count($fieldsInUniqueIndex) === 1) {
+              $indexFieldName = $fieldsInUniqueIndex[0];
+
+              $indexFieldMetadata = array_merge(
+                $entityFieldMetadata[$indexFieldName], [
+                  'referenced_field' => $referenceField,
+                  'entity_name' => $entityName,
+                  'entity_field_name' => $indexFieldName,
+                ]
+              );
+              $indexFieldMetadata['html']['label'] = $indexFieldMetadata['title'] . ' (' . ts('Match using') . ' ' . $indexFieldName . ')';
+              $refFields[$referenceField . '#' . $indexFieldName] = $indexFieldMetadata;
+            }
+            else {
+              if (count($fieldsInUniqueIndex) > 1) {
+                // handle combination indexes
+                if ($refFields[$referenceField]) {
+                  $label = $refFields[$referenceField];
+                }
+                else {
+                  $label = $referenceField;
+                }
+                $indexKey = '';
+                foreach ($fieldsInUniqueIndex as $col) {
+                  $indexKey .= '#' . $col;
+                }
+                foreach ($fieldsInUniqueIndex as $col) {
+                  $refFields[$referenceField . '#' . $col] = [
+                    'title' => $label,
+                    'name' => $indexFieldName,
+                    'html' => ['label' => $label . ' - ' . $col . ' (' . ts('Match using a combination of') . str_replace('#', ' ', $indexKey) . ')'],
+                    'extends' => $referenceField,
+                    'entity_name' => $entityName,
+                    'entity_field_name' => array_values($fieldsInUniqueIndex) + ['active' => $col],
+                  ];
+                }
+              }
+            }
+          }
+        }
+        catch (Exception $e) {
+        // Fix this - we get an exception if campaign is not enabled.... should be filtered
+        // in getUniqueFields if not available.
+        }
+      }
+    }
+    return $refFields;
+  }
+
+  /**
+   * Returns all unique fields of given entity
+   * (this is added to core as an api 'getuique' but not available in a stable release)
+   *
+   * @param string $entity
+   *
+   * @return array
+   */
+  protected  function findAllUniqueFields(string $entity): array {
+    $uniqueFields = [];
+
+    $dao = _civicrm_api3_get_DAO($entity);
+    $uFields = $dao::indices();
+
+    foreach ($uFields as $fieldKey => $field) {
+      if (!isset($field['unique']) || !$field['unique']) {
+        continue;
+      }
+      $uniqueFields[$fieldKey] = $field['field'];
+    }
+
+    return $uniqueFields;
+  }
+
+  /**
+   * Finds all reference fields for a given entity
+   *
+   * @param string $entity
+   * @param array $params
+   *
+   * @return array
+   */
+  protected function findAllReferenceFields(string $entity, array $params) {
+    $referenceFields = [];
+    $allEntities = civicrm_api3('Entity', 'get', [
+      'sequential' => 1,
+    ])['values'];
+    if (!in_array($entity, $allEntities)) {
+      return $referenceFields;
+    }
+
+    // Get all fields for this entity type
+    $entityFields = civicrm_api3($entity, 'getfields', [
+      'api_action' => "",
+    ]);
+    if ($entityFields['count'] > 0) {
+      foreach ($entityFields['values'] as $k => $val) {
+        //todo: Improve logic to find reference fields
+        if (isset($val['FKApiName']) && $entity !== 'Note') {
+          // this is a reference field
+          $referenceFields[$k]['label'] = $val['title'];
+          $referenceFields[$k]['name'] = $val['name'];
+          $referenceFields[$k]['entity'] = $val['FKApiName'];
+        }
+        // spl handling for 'Note' as it can reference multiple entity types
+        else {
+          if ($entity === 'Note' && $val['name'] === 'entity_id' && isset($params[$entity])) {
+            // this is a reference field
+            $referenceFields[$k]['label'] = $val['title'];
+            $referenceFields[$k]['name'] = $val['name'];
+            $referenceFields[$k]['entity'] = $params[$entity];
+          }
+        }
+      }
+    }
+
+    // Get all custom fields for this entity of type, contactReference
+    $customFields = civicrm_api3('CustomField', 'get', [
+      'sequential' => 1,
+      'custom_group_id.extends' => $entity,
+      'data_type' => "ContactReference",
+    ]);
+    if ($customFields['count'] > 0) {
+      $referenceFields['custom_fields'] = $customFields['values'];
+    }
+
+    return $referenceFields;
+  }
+
+  protected function getSpecialCaseFields($entity) {
+    $specialCaseFields = [
+      'MembershipType' => [
+        'membership_type_id' => 'name',
+      ],
+      'Address' => [
+        'master_id' => [
+          'contact_id',
+          'external_identifier', // special case; handled in import task
+        ],
+      ],
+      'County' => [
+        'county_id' => 'name',
+      ],
+      'StateProvince' => [
+        'state_province_id' => 'name',
+      ],
+    ];
+    return $specialCaseFields[$entity] ?? NULL;
   }
 
   /**
@@ -103,7 +311,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
         }
       }
       if ($this->getSubmittedValue('allowEntityUpdate')) {
-        $uniqueFields = CRM_Csvimport_Import_Controller::findAllUniqueFields($this->getSubmittedValue('entity'));
+        $uniqueFields = $this->findAllUniqueFields($this->getSubmittedValue('entity'));
         foreach ($uniqueFields as $uniqueField) {
           $fieldCount = 0;
           $tmp = [];
@@ -143,15 +351,6 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    */
   public function setEntity(string $entity): void {
     $this->_entity = $entity;
-  }
-
-  /**
-   * Set reference fields; array of ReferenceField objects
-   *
-   * @param array $value
-   */
-  public function setRefFields(array $value): void {
-    $this->_refFields = $value;
   }
 
   /**
