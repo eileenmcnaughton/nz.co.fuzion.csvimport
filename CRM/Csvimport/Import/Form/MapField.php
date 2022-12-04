@@ -86,48 +86,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    */
   public function buildQuickForm() {
 
-    //to save the current mappings
-    if (!$this->getSubmittedValue('savedMapping')) {
-      $saveDetailsName = ts('Save this field mapping');
-      $this->applyFilter('saveMappingName', 'trim');
-      $this->add('text', 'saveMappingName', ts('Name'));
-      $this->add('text', 'saveMappingDesc', ts('Description'));
-    }
-    else {
-      $savedMapping = $this->getSubmittedValue('savedMapping');
-
-      [$mappingName] = CRM_Core_BAO_Mapping::getMappingFields($savedMapping);
-
-      $mappingName = $mappingName[1];
-      //mapping is to be loaded from database
-
-      $params = ['id' => $savedMapping];
-      $temp = [];
-      $mappingDetails = CRM_Core_BAO_Mapping::retrieve($params, $temp);
-
-      $this->assign('loadedMapping', $mappingDetails->name);
-      $this->set('loadedMapping', $savedMapping);
-
-      $getMappingName = new CRM_Core_DAO_Mapping();
-      $getMappingName->id = $savedMapping;
-      $getMappingName->mapping_type = $this->_mappingType;
-      $getMappingName->find();
-      while ($getMappingName->fetch()) {
-        $mapperName = $getMappingName->name;
-      }
-
-      $this->assign('savedName', $mapperName);
-
-      $this->add('hidden', 'mappingId', $savedMapping);
-
-      $this->addElement('checkbox', 'updateMapping', ts('Update this field mapping'), NULL);
-      $saveDetailsName = ts('Save as a new field mapping');
-      $this->add('text', 'saveMappingName', ts('Name'));
-      $this->add('text', 'saveMappingDesc', ts('Description'));
-    }
-
-    $this->addElement('checkbox', 'saveMapping', $saveDetailsName, NULL, ['onclick' => "showSaveDetails(this)"]);
-
+    $this->addSavedMappingFields();
     $defaults = [];
     $mapperKeys = array_keys($this->_mapperFields);
     $hasHeaders = !empty($this->_columnHeaders);

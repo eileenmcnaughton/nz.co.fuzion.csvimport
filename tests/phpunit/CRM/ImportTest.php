@@ -72,7 +72,7 @@ class CRM_ImportTest extends TestCase implements HeadlessInterface, HookInterfac
 
   /**
    * @return array|null
-   * @throws \API_Exception
+   *
    * @throws \CRM_Core_Exception
    */
   protected function doPledgeImport(): ?array {
@@ -88,8 +88,7 @@ class CRM_ImportTest extends TestCase implements HeadlessInterface, HookInterfac
         ['name' => 'original_installment_amount'],
       ])
     ]);
-    $dataSource = new CRM_Import_DataSource_CSV($this->userJobID);
-    return $dataSource->getRow();
+    return (new CRM_Import_DataSource_CSV($this->userJobID))->getRow();
   }
 
 }
