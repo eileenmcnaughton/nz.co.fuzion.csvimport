@@ -36,6 +36,20 @@
   </div>
   <div id="upload-file" class="form-item">
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+    <div id="choose-data-source" class="form-item">
+      <h3>{ts}Choose Data Source{/ts}</h3>
+      <table class="form-layout">
+        <tr class="crm-import-datasource-form-block-dataSource">
+          <td class="label">{$form.dataSource.label}</td>
+          <td>{$form.dataSource.html} {help id='data-source-selection'}</td>
+        </tr>
+      </table>
+    </div>
+
+      {* Data source form pane is injected here when the data source is selected. *}
+    <div id="data-source-form-block">
+    </div>
+
     <table class="form-layout">
       <tr class="crm-api-import-entity-form-block-entity">
         <td class="label">{$form.entity.label}</td>
@@ -48,26 +62,6 @@
             {ts}Choose 'Set this in CSV' to use 'entity_table' field in next step. This allows you to import 'Notes' to multiple entities in same import.{/ts}
             <br/>
             {ts}Selecting an entity here will allow unique fields of this entity to be used in place of 'id'. Eg: External id for 'Contact'. (note: this will hide 'entity_table' field in next step){/ts}
-          </span>
-        </td>
-      </tr>
-      <tr class="crm-api-import-uploadfile-form-block-uploadFile">
-        <td class="label">{$form.uploadFile.label}</td>
-        <td>{$form.uploadFile.html}<br/>
-          <span class="description">
-        {ts}File format must be comma-separated-values (CSV).{/ts}
-      </span>
-        </td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td>{ts 1=$uploadSize}Maximum Upload File Size: %1 MB{/ts}</td>
-      </tr>
-      <tr class="crm-import-form-block-skipColumnHeader">
-        <td>&nbsp;</td>
-        <td>{$form.skipColumnHeader.html} {$form.skipColumnHeader.label}<br/>
-          <span class="description">
-            {ts}Check this box if the first row of your file consists of field names (Example: "Contact ID", "Participant Role").{/ts}
           </span>
         </td>
       </tr>
@@ -131,4 +125,31 @@
       CRM.$('#noteEntityWrapper').hide();
     }
   </script>
+{/literal}
+
+{literal}
+<script type="text/javascript">
+  CRM.$(function($) {
+    //build data source form block
+    buildDataSourceFormBlock();
+  });
+
+  function buildDataSourceFormBlock(dataSource)
+  {
+    var dataUrl = {/literal}"{crmURL p='civicrm/import/datasource' h=0 q='snippet=4'|smarty:nodefaults}"{literal};
+
+    if (!dataSource ) {
+      var dataSource = cj("#dataSource").val();
+    }
+
+    if ( dataSource ) {
+      dataUrl = dataUrl + '&dataSource=' + dataSource;
+    } else {
+      cj("#data-source-form-block").html( '' );
+      return;
+    }
+
+    cj("#data-source-form-block").load( dataUrl );
+  }
+</script>
 {/literal}
