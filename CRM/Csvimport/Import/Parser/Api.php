@@ -40,7 +40,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     );
     foreach ($this->importableFieldsMetadata as $field => $values) {
       if (empty($values['entity'])) {
-        $values['entity'] = $this->_entity;
+        $this->importableFieldsMetadata[$field]['entity'] = $this->_entity;
       }
       if (empty($values['title']) && !empty($values['label'])) {
         $this->importableFieldsMetadata[$field]['title'] = $values['label'];
