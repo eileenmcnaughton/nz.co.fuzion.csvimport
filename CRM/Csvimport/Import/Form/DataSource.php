@@ -122,8 +122,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     }
 
     $this->setDefaults([
-        'contactType' =>
-          CRM_Import_Parser::CONTACT_INDIVIDUAL,
+        'contactType' => 'Individual',
       ]
     );
     $this->addElement('checkbox', 'allowEntityUpdate', ts('Allow Updating An Entity Using Unique Fields'));
@@ -149,7 +148,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
    *
    * @return array
    */
-  public function setDefaultValues() {
+  public function setDefaultValues(): array {
     $defaults = parent::setDefaultValues();
     $entity = CRM_Utils_Request::retrieve('entity', 'String', $this, FALSE);
     //potentially we need to convert entity to full camel
@@ -163,12 +162,12 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
    * @return void
    * @access public
    */
-  public function preProcess() {
+  public function preProcess(): void {
     $session = CRM_Core_Session::singleton();
     $session->pushUserContext(CRM_Utils_System::url($this->_userContext, 'reset=1'));
   }
 
-  public function addContactOptions() {
+  public function addContactOptions(): void {
     //contact types option
     $contactOptions = [];
     if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
@@ -187,16 +186,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
       );
     }
     $this->addGroup($contactOptions, 'contactType', ts('Contact Type'));
-  }
-
-  /**
-   * Return a descriptive name for the page, used in wizard header
-   *
-   * @return string
-   * @access public
-   */
-  public function getTitle() {
-    return ts('Upload Data');
   }
 
 }
