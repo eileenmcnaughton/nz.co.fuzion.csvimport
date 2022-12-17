@@ -11,27 +11,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
   protected $_highlightedFields = [];
 
   /**
-   * Fields to remove from the field mapping if 'On Duplicate Update is selected
-   *
-   * @var array
-   */
-  protected $_onDuplicateUpdateRemove = [];
-
-  /**
-   * Fields to highlight in the field mapping if 'On Duplicate Update is selected
-   *
-   * @var array
-   */
-  protected $_onDuplicateUpdateHighlight = [];
-
-  /**
-   * Fields to highlight in the field mapping if 'On Duplicate Skip' or On Duplicate No Check is selected
-   *
-   * @var array
-   */
-  protected $_onDuplicateSkipHighlight = [];
-
-  /**
    * entity being imported to
    *
    * @var string
@@ -47,8 +26,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
   public function preProcess() {
     parent::preProcess();
 
-    $this->doDuplicateOptionHandling();
-
     // find all reference fields for this entity
     if ($this->getSubmittedValue('noteEntity')) {
       // why??
@@ -57,25 +34,6 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
 
     asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
-  }
-
-  /**
-   * Here we add or remove fields based on the selected duplicate option
-   */
-  function doDuplicateOptionHandling() {
-    if ($this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_UPDATE) {
-      foreach ($this->_onDuplicateUpdateRemove as $value) {
-        unset($this->_mapperFields[$value]);
-      }
-      foreach ($this->__onDuplicateUpdateHighlight as $name) {
-        $this->_highlightedFields[] = $name;
-      }
-    }
-    elseif ($this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_SKIP ||
-      $this->getSubmittedValue('onDuplicate') == CRM_Import_Parser::DUPLICATE_NOCHECK
-    ) {
-      $this->_highlightedFields = $this->_highlightedFields + $this->_onDuplicateUpdateHighlight;
-    }
   }
 
   /**
