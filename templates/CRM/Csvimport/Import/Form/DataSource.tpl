@@ -25,97 +25,135 @@
 *}
 {* API Import Wizard - Step 1 (upload data file) *}
 {* @var $form Contains the array for the form elements and other form associated information assigned to the template by the controller *}
+{*
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
+*}
 
-<div class="crm-block crm-form-block crm-api-import-uploadfile-form-block">
-  {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
-  {include file="CRM/common/WizardHeader.tpl"}
+{* Import Wizard - Step 1 (choose data source) *}
+<div class="crm-block crm-form-block crm-import-datasource-form-block">
 
-  <div id="help">
-    {ts}The API Import Wizard allows you to easily upload data against any API create method from other applications into CiviCRM.{/ts}
-    {ts}Files to be imported must be in the 'comma-separated-values' format (CSV) and must contain data needed to match the data to an existing record in your CiviCRM database.{/ts} {help id='upload'}
+    {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
+    {include file="CRM/common/WizardHeader.tpl"}
+    {if $errorMessage}
+      <div class="messages warning no-popup">
+          {$errorMessage}
+      </div>
+    {/if}
+  <div class="help">
+      {ts 1=$importEntity 2= $importEntities}The %1 Import Wizard allows you to easily upload %2 from other applications into CiviCRM.{/ts}
+      {ts}Files to be imported must be in the 'comma-separated-values' format (CSV) and must contain data needed to match an existing contact in your CiviCRM database.{/ts} {help id='upload'}
   </div>
-  <div id="upload-file" class="form-item">
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+  <div id="choose-data-source" class="form-item">
+    <h3>{ts}Choose Data Source{/ts}</h3>
     <table class="form-layout">
-      <tr class="crm-api-import-entity-form-block-entity">
-        <td class="label">{$form.entity.label}</td>
-        <td>{$form.entity.html}</td>
-      </tr>
-      <tr class="crm-api-import-noteEntity-form-block-entity" id="noteEntityWrapper">
-        <td class="label">{$form.noteEntity.label}</td>
-        <td>{$form.noteEntity.html}<br/>
-          <span class="description">
-            {ts}Choose 'Set this in CSV' to use 'entity_table' field in next step. This allows you to import 'Notes' to multiple entities in same import.{/ts}
-            <br/>
-            {ts}Selecting an entity here will allow unique fields of this entity to be used in place of 'id'. Eg: External id for 'Contact'. (note: this will hide 'entity_table' field in next step){/ts}
-          </span>
-        </td>
-      </tr>
-      <tr class="crm-api-import-uploadfile-form-block-uploadFile">
-        <td class="label">{$form.uploadFile.label}</td>
-        <td>{$form.uploadFile.html}<br/>
-          <span class="description">
-        {ts}File format must be comma-separated-values (CSV).{/ts}
-      </span>
-        </td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td>{ts 1=$uploadSize}Maximum Upload File Size: %1 MB{/ts}</td>
-      </tr>
-      <tr class="crm-import-form-block-skipColumnHeader">
-        <td>&nbsp;</td>
-        <td>{$form.skipColumnHeader.html} {$form.skipColumnHeader.label}<br/>
-          <span class="description">
-            {ts}Check this box if the first row of your file consists of field names (Example: "Contact ID", "Participant Role").{/ts}
-          </span>
-        </td>
-      </tr>
-      {if array_key_exists('onDuplicate', $form)}
-        <tr class="crm-api-import-uploadfile-form-block-onDuplicate">
-          <td class="label">{$form.onDuplicate.label}</td>
-          <td>{$form.onDuplicate.html}</td>
-        </tr>
-      {/if}
-      <tr class="crm-import-datasource-form-block-fieldSeparator">
-        <td class="label">{$form.fieldSeparator.label}</td>
-        <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
-      </tr>
-      <tr class="crm-import-datasource-form-block-allowEntityUpdate">
-        <td class="label">{$form.allowEntityUpdate.label}</td>
-        <td>{$form.allowEntityUpdate.html} <br/>
-          <span class="description">
-            {ts}Allow updating an existing entity using unique fields to match (Eg. external_id). By default updating is possible if 'id' is used.{/ts}
-          </span>
-        </td>
-      </tr>
-      <tr class="crm-import-datasource-form-block-ignoreCase">
-        <td class="label">{$form.ignoreCase.label}</td>
-        <td>{$form.ignoreCase.html} <br/>
-          <span class="description">
-            {ts}Ignore letter-case when mapping values to option fields (Eg. Individual Prefix). Note that this may produce unexpected results if you have multiple option names with same name like Ms. and ms.{/ts}
-          </span>
-        </td>
-      </tr>
-      <tr class="crm-api-import-uploadfile-form-block-date_format">
-        {include file="CRM/Core/Date.tpl"}
-      </tr>
-      {if $savedMapping}
-      <tr class="crm-api-import-uploadfile-form-block-savedMapping">
-        <td class="label">{if $loadedMapping}{ts}Select a Different Field Mapping{/ts}{else}{ts}Load Saved Field
-            Mapping{/ts}{/if}
-        </td>
-        <td><span>{$form.savedMapping.html}</span></td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td class="description">{ts}Select Saved Mapping, or leave blank to create a new mapping.{/ts}</td>
-        {/if}
+      <tr class="crm-import-datasource-form-block-dataSource">
+        <td class="label">{$form.dataSource.label}</td>
+        <td>{$form.dataSource.html} {help id='data-source-selection'}</td>
       </tr>
     </table>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
   </div>
+
+    {* Data source form pane is injected here when the data source is selected. *}
+  <div id="data-source-form-block">
+  </div>
+  <table class="form-layout-compressed">
+      {if array_key_exists('contactType', $form)}
+        <tr class="crm-import-uploadfile-from-block-contactType">
+          <td class="label">{$form.contactType.label}</td>
+          <td>{$form.contactType.html}<br />
+            <span class="description">
+              {ts 1=$importEntities}Select 'Individual' if you are importing %1 made by individual persons.{/ts}
+                {ts 1=$importEntities}Select 'Organization' or 'Household' if you are importing %1 to contacts of that type.{/ts}
+            </span>
+          </td>
+        </tr>
+      {/if}
+      {if array_key_exists('onDuplicate', $form)}
+        <tr class="crm-import-uploadfile-from-block-onDuplicate">
+          <td class="label">{$form.onDuplicate.label}</td>
+          <td>{$form.onDuplicate.html} {help id="id-onDuplicate"}</td>
+        </tr>
+      {/if}
+      {if array_key_exists('multipleCustomData', $form)}
+        <tr class="crm-import-uploadfile-form-block-multipleCustomData">
+          <td class="label">{$form.multipleCustomData.label}</td>
+          <td><span>{$form.multipleCustomData.html}</span> </td>
+        </tr>
+      {/if}
+    <tr class="crm-import-datasource-form-block-fieldSeparator">
+      <td class="label">{$form.fieldSeparator.label} {help id='id-fieldSeparator' file='CRM/Contact/Import/Form/DataSource'}</td>
+      <td>{$form.fieldSeparator.html}</td>
+    </tr>
+    <tr class="crm-import-uploadfile-form-block-date">{include file="CRM/Core/Date.tpl"}</tr>
+      {if array_key_exists('savedMapping', $form)}
+        <tr class="crm-import-uploadfile-form-block-savedMapping">
+          <td>{$form.savedMapping.label}</td>
+          <td>{$form.savedMapping.html}<br />
+            <span class="description">{ts}If you want to use a previously saved import field mapping - select it here.{/ts}</span>
+          </td>
+        </tr>
+      {/if}
+    <tr class="crm-api-import-entity-form-block-entity">
+      <td class="label">{$form.entity.label}</td>
+      <td>{$form.entity.html}</td>
+    </tr>
+    <tr class="crm-api-import-noteEntity-form-block-entity" id="noteEntityWrapper">
+      <td class="label">{$form.noteEntity.label}</td>
+      <td>{$form.noteEntity.html}<br/>
+        <span class="description">
+        {ts}Choose 'Set this in CSV' to use 'entity_table' field in next step. This allows you to import 'Notes' to multiple entities in same import.{/ts}
+        <br/>
+        {ts}Selecting an entity here will allow unique fields of this entity to be used in place of 'id'. Eg: External id for 'Contact'. (note: this will hide 'entity_table' field in next step){/ts}
+      </span>
+      </td>
+    </tr>
+    <tr class="crm-import-datasource-form-block-allowEntityUpdate">
+      <td class="label">{$form.allowEntityUpdate.label}</td>
+      <td>{$form.allowEntityUpdate.html} <br/>
+        <span class="description">
+        {ts}Allow updating an existing entity using unique fields to match (Eg. external_id). By default updating is possible if 'id' is used.{/ts}
+      </span>
+      </td>
+    </tr>
+  </table>
+  <div class="spacer"></div>
+
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+    {literal}
+  <script type="text/javascript">
+    CRM.$(function($) {
+      // build data source form block
+      buildDataSourceFormBlock();
+    });
+
+    function buildDataSourceFormBlock(dataSource) {
+      var dataUrl = {/literal}"{crmURL p=$urlPath h=0 q=$urlPathVar|smarty:nodefaults}"{literal};
+
+      if (!dataSource) {
+        var dataSource = CRM.$("#dataSource").val();
+      }
+
+      if (dataSource) {
+        dataUrl = dataUrl + '&dataSource=' + dataSource;
+      } else {
+        CRM.$("#data-source-form-block").html('');
+        return;
+      }
+
+      CRM.$("#data-source-form-block").load(dataUrl);
+    }
+  </script>
+    {/literal}
 </div>
+
 {literal}
   <script type="text/javascript">
     CRM.$('select#entity').on('change', function () {
