@@ -383,4 +383,14 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     $this->setFieldMetadata();
   }
 
+  /**
+   * Override parent to make assignee work.   
+   */
+  protected function getOddlyMappedMetadataFields(): array {
+    $fields = parent::getOddlyMappedMetadataFields();
+    $fields['assignee_id'] = 'assignee_contact_id';
+    $fields['target_id'] = 'target_contact_id';
+    return $fields;
+  }
+  
 }
