@@ -389,17 +389,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
   }
 
   /**
-   * the initializer code, called before the processing
-   *
-   * @throws \CiviCRM_API3_Exception
-   */
-  public function init(): void {
-    $this->setEntity($this->getSubmittedValue('entity'));
-    $this->setFieldMetadata();
-  }
-
-  /**
-   * Override parent to make assignee work.   
+   * Override parent to make assignee work.
    */
   protected function getOddlyMappedMetadataFields(): array {
     $fields = parent::getOddlyMappedMetadataFields();
@@ -407,5 +397,5 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     $fields['target_id'] = 'target_contact_id';
     return $fields;
   }
-  
+
 }
