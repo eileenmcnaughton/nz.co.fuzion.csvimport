@@ -23,7 +23,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
    * @return void
    * @access public
    */
-  public function preProcess() {
+  public function preProcess(): void {
     parent::preProcess();
 
     // find all reference fields for this entity
@@ -34,6 +34,17 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
 
     asort($this->_mapperFields);
     $this->assign('highlightedFields', $this->_highlightedFields);
+  }
+
+  /**
+   * Get the base entity for the import.
+   *
+   * @return string
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function getBaseEntity(): string {
+    return $this->getSubmittedValue('entity');
   }
 
   /**
