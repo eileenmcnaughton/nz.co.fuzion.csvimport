@@ -51,6 +51,13 @@
           </span>
         </td>
       </tr>
+        {* transitional if - always true in 5.59+ *}
+      {if array_key_exists('dataSource', $form)}
+          <tr class="crm-import-datasource-form-block-dataSource">
+            <td class="label">{$form.dataSource.label}</td>
+            <td>{$form.dataSource.html} {help id='data-source-selection'}</td>
+          </tr>
+      {/if}
       <tr class="crm-api-import-uploadfile-form-block-uploadFile">
         <td class="label">{$form.uploadFile.label}</td>
         <td>{$form.uploadFile.html}<br/>
