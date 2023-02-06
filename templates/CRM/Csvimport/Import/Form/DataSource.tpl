@@ -77,10 +77,13 @@
           <td>{$form.onDuplicate.html}</td>
         </tr>
       {/if}
+      {* as of 5.59 this fieldSeparator tr can go. It is just here to transition between versions *}
+      {if array_key_exists('fieldSeparator', $form)}
       <tr class="crm-import-datasource-form-block-fieldSeparator">
         <td class="label">{$form.fieldSeparator.label}</td>
         <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
       </tr>
+      {/if}
       <tr class="crm-import-datasource-form-block-allowEntityUpdate">
         <td class="label">{$form.allowEntityUpdate.label}</td>
         <td>{$form.allowEntityUpdate.html} <br/>
