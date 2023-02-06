@@ -110,18 +110,14 @@
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>
-      {if $savedMapping}
-      <tr class="crm-api-import-uploadfile-form-block-savedMapping">
-        <td class="label">{if $loadedMapping}{ts}Select a Different Field Mapping{/ts}{else}{ts}Load Saved Field
-            Mapping{/ts}{/if}
-        </td>
-        <td><span>{$form.savedMapping.html}</span></td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td class="description">{ts}Select Saved Mapping, or leave blank to create a new mapping.{/ts}</td>
-        {/if}
-      </tr>
+      {if array_key_exists('savedMapping', $form)}
+        <tr class="crm-import-uploadfile-form-block-savedMapping">
+          <td>{$form.savedMapping.label}</td>
+          <td>{$form.savedMapping.html}<br />
+            <span class="description">{ts}If you want to use a previously saved import field mapping - select it here.{/ts}</span>
+          </td>
+        </tr>
+      {/if}
     </table>
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
   </div>
