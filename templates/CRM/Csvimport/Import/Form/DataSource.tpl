@@ -51,6 +51,13 @@
           </span>
         </td>
       </tr>
+        {* transitional if - always true in 5.59+ *}
+      {if array_key_exists('dataSource', $form)}
+          <tr class="crm-import-datasource-form-block-dataSource">
+            <td class="label">{$form.dataSource.label}</td>
+            <td>{$form.dataSource.html} {help id='data-source-selection'}</td>
+          </tr>
+      {/if}
       <tr class="crm-api-import-uploadfile-form-block-uploadFile">
         <td class="label">{$form.uploadFile.label}</td>
         <td>{$form.uploadFile.html}<br/>
@@ -77,10 +84,13 @@
           <td>{$form.onDuplicate.html}</td>
         </tr>
       {/if}
+      {* as of 5.59 this fieldSeparator tr can go. It is just here to transition between versions *}
+      {if array_key_exists('fieldSeparator', $form)}
       <tr class="crm-import-datasource-form-block-fieldSeparator">
         <td class="label">{$form.fieldSeparator.label}</td>
         <td>{$form.fieldSeparator.html} {help id='id-fieldSeparator'}</td>
       </tr>
+      {/if}
       <tr class="crm-import-datasource-form-block-allowEntityUpdate">
         <td class="label">{$form.allowEntityUpdate.label}</td>
         <td>{$form.allowEntityUpdate.html} <br/>
@@ -100,18 +110,14 @@
       <tr class="crm-api-import-uploadfile-form-block-date_format">
         {include file="CRM/Core/Date.tpl"}
       </tr>
-      {if $savedMapping}
-      <tr class="crm-api-import-uploadfile-form-block-savedMapping">
-        <td class="label">{if $loadedMapping}{ts}Select a Different Field Mapping{/ts}{else}{ts}Load Saved Field
-            Mapping{/ts}{/if}
-        </td>
-        <td><span>{$form.savedMapping.html}</span></td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td class="description">{ts}Select Saved Mapping, or leave blank to create a new mapping.{/ts}</td>
-        {/if}
-      </tr>
+      {if array_key_exists('savedMapping', $form)}
+        <tr class="crm-import-uploadfile-form-block-savedMapping">
+          <td>{$form.savedMapping.label}</td>
+          <td>{$form.savedMapping.html}<br />
+            <span class="description">{ts}If you want to use a previously saved import field mapping - select it here.{/ts}</span>
+          </td>
+        </tr>
+      {/if}
     </table>
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
   </div>

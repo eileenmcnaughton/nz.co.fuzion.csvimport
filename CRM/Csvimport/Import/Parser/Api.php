@@ -32,6 +32,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
       'name' => 'csv_api_importer',
       'id' => 'csv_api_importer',
       'title' => 'Api Import',
+      'entity' => 'Unknown',
     ]];
   }
 
