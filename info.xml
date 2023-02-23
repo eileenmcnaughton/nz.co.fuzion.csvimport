@@ -28,10 +28,11 @@
   </classloader>
   <civix>
     <namespace>CRM/Csvimport</namespace>
-    <format>22.12.1</format>
+    <format>23.02.0</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
     <mixin>scan-classes@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.0</mixin>
   </mixins>
 </extension>
