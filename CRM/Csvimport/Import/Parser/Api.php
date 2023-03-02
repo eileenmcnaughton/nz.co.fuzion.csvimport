@@ -331,7 +331,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
           }
         }
 
-        if (count($uniqueField) === $fieldCount) {
+        if (!empty($uniqueField) && count($uniqueField) === $fieldCount) {
           $tmp['sequential'] = 1;
           $tmp['return'] = ['id'];
           $existingEntity = civicrm_api3($this->getSubmittedValue('entity'), 'get', $tmp);
