@@ -117,7 +117,12 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
 
             if (count($fieldsInUniqueIndex) === 1) {
               $indexFieldName = $fieldsInUniqueIndex[0];
-
+              
+              // skip special case fields (such as the address.external_identifier)
+              if (empty($entityFieldMetadata[$indexFieldName])) {
+                continue;
+              }
+              
               $indexFieldMetadata = array_merge(
                 $entityFieldMetadata[$indexFieldName], [
                   'referenced_field' => $referenceField,
