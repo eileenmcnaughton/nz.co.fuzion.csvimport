@@ -77,7 +77,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
           $creatableEntities[$entity] = $entity;
         }
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Ignore entities that raise an exception
       }
     }
