@@ -43,11 +43,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
 
   protected $_enableContactOptions = FALSE;
 
-  protected $_userContext = 'civicrm/csvimporter/import';
-
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
-
-  const IMPORT_ENTITY = 'Api Entity';
 
   /**
    * Get the name of the type to be stored in civicrm_user_job.type_id.
@@ -147,42 +143,35 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
    * Set defaults for form
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   public function setDefaultValues(): array {
     $defaults = parent::setDefaultValues();
-    $entity = CRM_Utils_Request::retrieve('entity', 'String', $this, FALSE);
+    $entity = CRM_Utils_Request::retrieve('entity', 'String', $this);
     //potentially we need to convert entity to full camel
     $defaults['entity'] = empty($entity) ? '' : ucfirst($entity);
     return $defaults;
   }
 
   /**
-   * Function to set variables up before form is built
-   *
-   * @return void
-   * @access public
+   * @throws \CRM_Core_Exception
    */
-  public function preProcess(): void {
-    $session = CRM_Core_Session::singleton();
-    $session->pushUserContext(CRM_Utils_System::url($this->_userContext, 'reset=1'));
-  }
-
   public function addContactOptions(): void {
     //contact types option
     $contactOptions = [];
     if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
       $contactOptions[] = $this->createElement('radio',
-        NULL, NULL, ts('Individual'), CRM_Import_Parser::CONTACT_INDIVIDUAL
+        NULL, NULL, ts('Individual'), 'Individual'
       );
     }
     if (CRM_Contact_BAO_ContactType::isActive('Household')) {
       $contactOptions[] = $this->createElement('radio',
-        NULL, NULL, ts('Household'), CRM_Import_Parser::CONTACT_HOUSEHOLD
+        NULL, NULL, ts('Household'), 'Household'
       );
     }
     if (CRM_Contact_BAO_ContactType::isActive('Organization')) {
       $contactOptions[] = $this->createElement('radio',
-        NULL, NULL, ts('Organization'), CRM_Import_Parser::CONTACT_ORGANIZATION
+        NULL, NULL, ts('Organization'), 'Organization'
       );
     }
     $this->addGroup($contactOptions, 'contactType', ts('Contact Type'));
