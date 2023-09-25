@@ -28,7 +28,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Csvimport</namespace>
-    <format>23.02.0</format>
+    <format>23.02.1</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
