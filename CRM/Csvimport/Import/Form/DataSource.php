@@ -54,6 +54,10 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     return 'csv_api_importer';
   }
 
+  public function getTemplateFileName(): string {
+    return 'CRM/Csvimport/Import/Form/DataSource.tpl';
+  }
+
   /**
    * Include duplicate options
    */

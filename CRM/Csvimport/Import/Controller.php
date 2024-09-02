@@ -13,7 +13,7 @@ class CRM_Csvimport_Import_Controller extends CRM_Core_Controller {
       set_time_limit(0);
     }
 
-    $this->_stateMachine = new CRM_Import_StateMachine($this, $action);
+    $this->_stateMachine = new CRM_Import_StateMachine($this, $action, NULL, 'CRM_Csvimport_Import');
 
     // create and instantiate the pages
     $this->addPages($this->_stateMachine, $action);
