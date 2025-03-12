@@ -51,7 +51,7 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
    * @return string
    */
   public function getUserJobType(): string {
-    return 'csv_api_importer';
+    return 'csv_api_import';
   }
 
   public function getTemplateFileName(): string {

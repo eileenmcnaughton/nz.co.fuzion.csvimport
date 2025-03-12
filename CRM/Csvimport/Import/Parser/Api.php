@@ -29,8 +29,8 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    */
   public static function getUserJobInfo(): array {
     return [[
-      'name' => 'csv_api_importer',
-      'id' => 'csv_api_importer',
+      'name' => 'csv_api_import',
+      'id' => 'csv_api_import',
       'title' => 'Api Import',
       'entity' => 'Unknown',
     ]];
