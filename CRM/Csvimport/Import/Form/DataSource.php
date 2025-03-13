@@ -45,15 +45,6 @@ class CRM_Csvimport_Import_Form_DataSource extends CRM_Import_Form_DataSource {
 
   protected $_mappingType = 'Import Participant';//@todo make this vary depending on api - need to create option values
 
-  /**
-   * Get the name of the type to be stored in civicrm_user_job.type_id.
-   *
-   * @return string
-   */
-  public function getUserJobType(): string {
-    return 'csv_api_import';
-  }
-
   public function getTemplateFileName(): string {
     return 'CRM/Csvimport/Import/Form/DataSource.tpl';
   }

@@ -35,5 +35,13 @@ trait CRM_Csvimport_Import_Form_CSVImportFormTrait {
     return $this->parser;
   }
 
+  /**
+   * Get the name of the type to be stored in civicrm_user_job.type_id.
+   *
+   * @return string
+   */
+  public function getUserJobType(): string {
+    return 'csv_api_import';
+  }
 
 }
