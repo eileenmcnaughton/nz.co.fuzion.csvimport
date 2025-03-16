@@ -14,15 +14,24 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2024-09-02</releaseDate>
-  <version>1.14</version>
+  <releaseDate>2025-03-17</releaseDate>
+  <version>1.15</version>
   <develStage>stable</develStage>
   <requires>
     <ext>civiimport</ext>
   </requires>
   <compatibility>
-    <ver>5.76</ver>
+    <ver>6.1</ver>
   </compatibility>
+  <smarty_compatibility>
+    <ver>5.0</ver>
+  </smarty_compatibility>
+  <php_compatibility>
+    <ver>8.1</ver>
+    <ver>8.2</ver>
+    <ver>8.3</ver>
+    <ver>8.4</ver>
+  </php_compatibility>
   <comments>This is module which adds a UI to api create actions. There are no plans to provide free support for it
   </comments>
   <classloader>
