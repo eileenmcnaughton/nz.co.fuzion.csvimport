@@ -380,6 +380,13 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     return $this->getSubmittedValue('entity');
   }
 
+  public function getBaseEntity(): string {
+    if ($this->baseEntity === NULL) {
+      $this->baseEntity = $this->getSubmittedValue('entity');
+    }
+    return $this->baseEntity;
+  }
+
   /**
    * Set if entities can be updated using unique fields
    *
