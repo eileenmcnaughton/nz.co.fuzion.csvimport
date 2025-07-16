@@ -308,6 +308,8 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
   public function import(array $values): void {
     $rowNumber = (int) ($values[array_key_last($values)]);
     $entity = $this->getSubmittedValue('entity');
+    // Civiimport wants a numeric array, not an associative array.
+    $values = array_values($values);
     try {
       $params = $this->getMappedRow($values);
       foreach ($params[$this->getEntity()] as $key => $value) {
