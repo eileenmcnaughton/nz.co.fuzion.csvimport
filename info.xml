@@ -14,8 +14,8 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2025-03-17</releaseDate>
-  <version>1.15</version>
+  <releaseDate>2025-07-17</releaseDate>
+  <version>1.16</version>
   <develStage>stable</develStage>
   <requires>
     <ext>civiimport</ext>
