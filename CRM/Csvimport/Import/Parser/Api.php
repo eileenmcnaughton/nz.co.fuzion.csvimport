@@ -22,7 +22,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
 
   protected $_ignoreCase = FALSE;
 
-  protected $baseEntity = NULL;
+  protected $baseEntity = '';
 
   /**
    * Get user job information.
