@@ -90,7 +90,39 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
     }
     $this->assign('savedMappingName', $this->getMappingName());
     $this->addElement('checkbox', 'saveMapping', $saveDetailsName, NULL);
-    $this->addFormRule(['CRM_Import_Form_MapField', 'mappingRule']);
+    $this->addFormRule(['CRM_Csvimport_Import_Form_MapField', 'mappingRule']);
+  }
+
+  /**
+   * Global validation rules for the form.
+   *
+   * @param array $fields
+   *   Posted values of the form.
+   *
+   * @return array|true
+   *   list of errors to be posted back to the form
+   */
+  public static function mappingRule($fields) {
+    $errors = [];
+    if (!empty($fields['saveMapping'])) {
+      $nameField = $fields['saveMappingName'] ?? NULL;
+      if (empty($nameField)) {
+        $errors['saveMappingName'] = ts('Name is required to save Import Mapping');
+      }
+      else {
+        $mappingTypeId = CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', 'Import Contact');
+        if (CRM_Core_BAO_Mapping::checkMapping($nameField, $mappingTypeId)) {
+          $errors['saveMappingName'] = ts('Duplicate Import Mapping Name');
+        }
+      }
+    }
+    // This is horrible & should be removed once gone from tpl
+    if (!empty($errors['saveMappingName'])) {
+      $_flag = 1;
+      $assignError = new CRM_Core_Page();
+      $assignError->assign('mappingDetailsError', $_flag);
+    }
+    return empty($errors) ? TRUE : $errors;
   }
 
   /**
