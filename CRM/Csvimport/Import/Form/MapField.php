@@ -111,7 +111,7 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
       }
       else {
         $mappingTypeId = CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', 'Import Contact');
-        if (CRM_Core_BAO_Mapping::checkMapping($nameField, $mappingTypeId)) {
+        if (self::checkMapping($nameField, $mappingTypeId)) {
           $errors['saveMappingName'] = ts('Duplicate Import Mapping Name');
         }
       }
@@ -123,6 +123,23 @@ class CRM_Csvimport_Import_Form_MapField extends CRM_Import_Form_MapField {
       $assignError->assign('mappingDetailsError', $_flag);
     }
     return empty($errors) ? TRUE : $errors;
+  }
+
+  /**
+   * Check Duplicate Mapping Name.
+   *
+   * @param string $nameField
+   *   mapping Name.
+   * @param string $mapTypeId
+   *   mapping Type.
+   *
+   * @return bool
+   */
+  public static function checkMapping($nameField, $mapTypeId) {
+    $mapping = new CRM_Core_DAO_Mapping();
+    $mapping->name = $nameField;
+    $mapping->mapping_type_id = $mapTypeId;
+    return (bool) $mapping->find(TRUE);
   }
 
   /**
