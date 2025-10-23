@@ -312,7 +312,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
     $values = array_values($values);
     try {
       $params = $this->getMappedRow($values);
-      foreach ($params[$this->getEntity()] as $key => $value) {
+      foreach ($params as $key => $value) {
         $fieldMetadata = $this->getFieldMetadata($key);
         if ($fieldMetadata['referenced_field'] ?? NULL) {
           $refEntity = $fieldMetadata['entity_name'];
@@ -354,7 +354,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
       }
       $params['skipRecentView'] = TRUE;
       $params['check_permissions'] = TRUE;
-      $result = civicrm_api3($entity, 'create', $params[$this->getEntity()]);
+      $result = civicrm_api3($entity, 'create', $params);
     }
     catch (Exception $e) {
       $this->setImportStatus($rowNumber, 'ERROR', $e->getMessage());
