@@ -14,14 +14,14 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2025-07-18</releaseDate>
-  <version>1.17</version>
+  <releaseDate>2025-10-25</releaseDate>
+  <version>1.18</version>
   <develStage>stable</develStage>
   <requires>
     <ext>civiimport</ext>
   </requires>
   <compatibility>
-    <ver>6.1</ver>
+    <ver>6.6</ver>
   </compatibility>
   <smarty_compatibility>
     <ver>5.0</ver>
@@ -40,7 +40,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Csvimport</namespace>
-    <format>23.02.1</format>
+    <format>25.01.1</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
