@@ -383,7 +383,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
   }
 
   public function getBaseEntity(): string {
-    if ($this->baseEntity === NULL) {
+    if (!$this->baseEntity) {
       $this->baseEntity = $this->getSubmittedValue('entity');
     }
     return $this->baseEntity;

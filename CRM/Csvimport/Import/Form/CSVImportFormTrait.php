@@ -44,4 +44,15 @@ trait CRM_Csvimport_Import_Form_CSVImportFormTrait {
     return 'csv_api_import';
   }
 
+  /**
+   * Get the base entity for the import.
+   *
+   * @return string
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function getBaseEntity(): string {
+    return $this->getSubmittedValue('entity') ?? '';
+  }
+
 }
