@@ -41,7 +41,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
   }
 
   /**
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function setFieldMetadata(): void {
     $this->importableFieldsMetadata = array_merge(
@@ -323,7 +323,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
           try {
             $params['contact_id'] = (int) civicrm_api3($refEntity, 'getsingle', [$fieldMetadata['entity_field_name'] => $value])['id'];
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             throw new CRM_Core_Exception('Failed to find referenced entity');
           }
         }
